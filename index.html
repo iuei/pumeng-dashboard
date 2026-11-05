@@ -36,10 +36,10 @@ a { color: var(--accent); text-decoration: none; }
 header {
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
-  padding: 14px 16px;
+  padding: 12px 16px;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
 }
 .header-inner {
   max-width: 1120px;
@@ -86,7 +86,7 @@ h1 {
 main {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 12px 12px 40px;
+  padding: 10px 12px 36px;
   display: grid;
   gap: 10px;
 }
@@ -102,7 +102,42 @@ section h2 {
   font-weight: 600;
   color: var(--muted);
   letter-spacing: 0.04em;
-  text-transform: none;
+}
+/* 拍板：最高视觉权重，紧贴顶栏 */
+#sec-decisions {
+  border-color: #1E40AF;
+  background: linear-gradient(180deg, #0B1B3A 0%, var(--card) 48%);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+#sec-decisions h2 {
+  color: #93C5FD;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#sec-decisions .count {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+.decision {
+  border: 1px solid #1E3A8A;
+  border-left: 3px solid var(--accent);
+  background: var(--card-alt);
+  border-radius: 0 6px 6px 0;
+  padding: 9px 11px;
+  margin-bottom: 7px;
+}
+.decision:last-child { margin-bottom: 0; }
+.decision .t { font-size: 0.9rem; font-weight: 600; }
+.decision .m { color: var(--muted); font-size: 0.76rem; margin-top: 4px; }
+/* 今日卡点 */
+#sec-doing .task {
+  border-color: #334155;
+}
+#sec-doing .task.has-blocker {
+  border-left: 3px solid var(--danger);
 }
 .metrics {
   display: grid;
@@ -116,16 +151,11 @@ section h2 {
   padding: 10px;
 }
 .metric .v {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .metric .l { color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
-.cols-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
 .cols-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -167,7 +197,7 @@ section h2 {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 10px;
-  min-height: 80px;
+  min-height: 64px;
 }
 .dual-panel h3 {
   margin: 0 0 8px;
@@ -177,16 +207,27 @@ section h2 {
   align-items: center;
   gap: 6px;
 }
-.decision {
-  border-left: 3px solid var(--accent);
-  background: var(--card-alt);
-  border-radius: 0 6px 6px 0;
-  padding: 8px 10px;
-  margin-bottom: 6px;
+details.fold {
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
 }
-.decision:last-child { margin-bottom: 0; }
-.decision .t { font-size: 0.88rem; font-weight: 550; }
-.decision .m { color: var(--muted); font-size: 0.74rem; margin-top: 3px; }
+details.fold > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-weight: 600;
+  user-select: none;
+  padding: 2px 0;
+}
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before {
+  content: "▸ ";
+  color: var(--border-strong);
+}
+details.fold[open] > summary::before { content: "▾ "; }
+details.fold .fold-body { margin-top: 6px; }
 .timeline-day {
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
@@ -221,9 +262,10 @@ footer {
   font-size: 0.72rem;
 }
 .err { color: var(--danger); }
+#sec-metrics { opacity: 0.92; }
 @media (max-width: 840px) {
   .metrics { grid-template-columns: 1fr 1fr; }
-  .cols-3, .cols-2 { grid-template-columns: 1fr; }
+  .cols-2 { grid-template-columns: 1fr; }
   .timeline-day { grid-template-columns: 1fr; gap: 4px; }
 }
 @media (max-width: 420px) {
@@ -253,10 +295,8 @@ function esc(s) {
 
 function parseStamp(s) {
   if (!s) return null;
-  // "2026-11-06 00:05 Asia/Shanghai"
   const m = String(s).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
   if (!m) return null;
-  // Treat as Asia/Shanghai (+08:00)
   return new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00+08:00`);
 }
 
@@ -277,10 +317,12 @@ function lineChip(label) {
   return label ? `<span class="chip">${esc(label)}</span>` : '';
 }
 
-function taskCard(t) {
+function taskCard(t, opts) {
   const line = lineChip(t.line_label || t.line);
   const owner = t.owner ? `<span class="chip owner">${esc(t.owner)}</span>` : '';
-  return `<div class="task">
+  const blk = !!t.blocker;
+  const cls = 'task' + (blk && opts && opts.emphasizeBlocker ? ' has-blocker' : '');
+  return `<div class="${cls}">
     <div class="t">${line}${owner}${esc(t.title || '')}</div>
     ${t.note ? `<div class="m">${esc(t.note)}</div>` : ''}
     ${t.eta ? `<div class="eta">ETA · ${esc(t.eta)}</div>` : ''}
@@ -288,28 +330,31 @@ function taskCard(t) {
   </div>`;
 }
 
-function bucket(title, items) {
-  return `<div>
-    <div class="col-head">${esc(title)} · ${items.length}</div>
-    ${items.length ? items.map(taskCard).join('') : '<div class="empty">（空）</div>'}
-  </div>`;
+function foldGroup(label, items, lineKey) {
+  const n = items.length;
+  if (!n) return '';
+  const mapped = items.map(t => taskCard({...t, line: lineKey}));
+  return `<details class="fold">
+    <summary>${esc(label)} · ${n}</summary>
+    <div class="fold-body">${mapped.join('')}</div>
+  </details>`;
 }
 
-function linePanel(title, chipClass, bucketObj) {
+function linePanel(title, chipClass, lineKey, bucketObj) {
   const doing = bucketObj.doing || [];
   const todo = bucketObj.todo || [];
   const paused = bucketObj.paused || [];
   const done = bucketObj.done_today || [];
   return `<div class="dual-panel">
-    <h3><span class="chip ${chipClass}">${esc(title)}</span></h3>
-    <div class="col-head">进行中 · ${doing.length}</div>
-    ${doing.length ? doing.map(t => taskCard({...t, line: title === '谱梦线' ? 'pumeng' : 'douyin'})).join('') : '<div class="empty">（无）</div>'}
-    <div class="col-head" style="margin-top:8px">待办 · ${todo.length}</div>
-    ${todo.length ? todo.map(t => taskCard({...t, line: title === '谱梦线' ? 'pumeng' : 'douyin'})).join('') : '<div class="empty">（无）</div>'}
-    <div class="col-head" style="margin-top:8px">暂停 · ${paused.length}</div>
-    ${paused.length ? paused.map(t => taskCard({...t, line: title === '谱梦线' ? 'pumeng' : 'douyin'})).join('') : '<div class="empty">（无）</div>'}
-    <div class="col-head" style="margin-top:8px">今日完成 · ${done.length}</div>
-    ${done.length ? done.map(t => taskCard({...t, line: title === '谱梦线' ? 'pumeng' : 'douyin'})).join('') : '<div class="empty">（无）</div>'}
+    <h3><span class="chip ${chipClass}">${esc(title)}</span>
+      <span class="chip">${doing.length} 进行中</span></h3>
+    <div class="col-head">进行中</div>
+    ${doing.length
+      ? doing.map(t => taskCard({...t, line: lineKey}, {emphasizeBlocker: true})).join('')
+      : '<div class="empty">（无）</div>'}
+    ${foldGroup('待办', todo, lineKey)}
+    ${foldGroup('暂停', paused, lineKey)}
+    ${foldGroup('今日完成', done, lineKey)}
   </div>`;
 }
 
@@ -327,44 +372,12 @@ function render(d) {
   const timeline = d.timeline || [];
   const m = d.metrics || {};
   const tables = m.feishu_tables || {};
+  const doing = today.doing || [];
 
+  // DOM 顺序硬性：拍板 → 今日卡点 → 双线 → 时间线 → 聚合
   document.getElementById('app').innerHTML = `
-    <section>
-      <h2>聚合</h2>
-      <div class="metrics">
-        <div class="metric"><div class="v">${esc(String(m.songs_on_platform_approx ?? '—'))}</div><div class="l">歌曲在架（约）</div></div>
-        <div class="metric"><div class="v">${esc(String(tables.play_snapshots ?? '—'))}</div><div class="l">播放快照条数</div></div>
-        <div class="metric"><div class="v">${esc(String(tables.songs ?? '—'))} / ${esc(String(tables.artist_albums ?? '—'))}</div><div class="l">歌曲表 / 歌手专辑表</div></div>
-        <div class="metric"><div class="v">${esc(String(m.pm_ids_count ?? '—'))}</div><div class="l">本批 PM 编号数</div></div>
-      </div>
-    </section>
-
-    <section>
-      <h2>今日进度 · 谁在做什么 / 卡点 / ETA</h2>
-      ${(today.doing || []).length
-        ? (today.doing || []).map(taskCard).join('')
-        : '<div class="empty">今日无进行中任务</div>'}
-    </section>
-
-    <section>
-      <h2>今日已完成 / 待办 / 暂停</h2>
-      <div class="cols-3">
-        ${bucket('今日已完成', today.done_today || [])}
-        ${bucket('待办', today.todo || [])}
-        ${bucket('暂停', today.paused || [])}
-      </div>
-    </section>
-
-    <section>
-      <h2>双线分栏 · 谱梦 | 抖音</h2>
-      <div class="cols-2">
-        ${linePanel('谱梦线', 'line-pm', lines.pumeng || {})}
-        ${linePanel('抖音线', 'line-dy', lines.douyin || {})}
-      </div>
-    </section>
-
-    <section>
-      <h2>需 liu 拍板</h2>
+    <section id="sec-decisions">
+      <h2>需 liu 拍板 <span class="count">${decisions.length} 项</span></h2>
       ${decisions.length
         ? decisions.map(x => `<div class="decision">
             <div class="t"><span class="chip accent">拍板</span><span class="chip owner">${esc(x.owner || 'liu')}</span>${esc(x.title || '')}</div>
@@ -373,7 +386,22 @@ function render(d) {
         : '<div class="empty">暂无待拍板项</div>'}
     </section>
 
-    <section>
+    <section id="sec-doing">
+      <h2>今日卡点 / 进行中 · 谁 · 卡点 · ETA</h2>
+      ${doing.length
+        ? doing.map(t => taskCard(t, {emphasizeBlocker: true})).join('')
+        : '<div class="empty">今日无进行中任务</div>'}
+    </section>
+
+    <section id="sec-lines">
+      <h2>双线 · 谱梦 | 抖音（进行中展开；其余折叠）</h2>
+      <div class="cols-2">
+        ${linePanel('谱梦线', 'line-pm', 'pumeng', lines.pumeng || {})}
+        ${linePanel('抖音线', 'line-dy', 'douyin', lines.douyin || {})}
+      </div>
+    </section>
+
+    <section id="sec-timeline">
       <h2>7 日时间线</h2>
       ${timeline.map(day => {
         const empty = !(day.did||[]).length && !(day.closed||[]).length && !(day.opened||[]).length;
@@ -387,6 +415,16 @@ function render(d) {
           </div>
         </div>`;
       }).join('') || '<div class="empty">无时间线</div>'}
+    </section>
+
+    <section id="sec-metrics">
+      <h2>聚合数字</h2>
+      <div class="metrics">
+        <div class="metric"><div class="v">${esc(String(m.songs_on_platform_approx ?? '—'))}</div><div class="l">歌曲在架（约）</div></div>
+        <div class="metric"><div class="v">${esc(String(tables.play_snapshots ?? '—'))}</div><div class="l">播放快照条数</div></div>
+        <div class="metric"><div class="v">${esc(String(tables.songs ?? '—'))} / ${esc(String(tables.artist_albums ?? '—'))}</div><div class="l">歌曲表 / 歌手专辑表</div></div>
+        <div class="metric"><div class="v">${esc(String(m.pm_ids_count ?? '—'))}</div><div class="l">本批 PM 编号数</div></div>
+      </div>
     </section>
   `;
   document.getElementById('foot').textContent = d.disclaimer || '';

@@ -1,7 +1,5 @@
-# 谱梦音乐 · 运营监控台
+# 谱梦 · 进度监控
 
-静态页，由 box 上 `build_data.py` 生成 `data.json` 后经 `publish.sh` 推送到 GitHub Pages。
+静态页 + `data.json`，GitHub Pages 托管：https://iuei.github.io/pumeng-dashboard/
 
-- 预期地址：https://iuei.github.io/pumeng-dashboard/
-- 页面每 30 秒重新拉取 `data.json`
-- 仅含进度与聚合数字
+本地构建：`python3 build_data.py`，发布见上级 `publish.sh`（push 若被拒可用 Contents API）。
