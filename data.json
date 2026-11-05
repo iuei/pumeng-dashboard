@@ -1,267 +1,340 @@
 {
-  "title": "谱梦音乐 · 运营监控台",
-  "updated_at": "2026-11-06 00:01 Asia/Shanghai",
+  "title": "谱梦 · 进度监控",
+  "updated_at": "2026-11-06 00:06 Asia/Shanghai",
+  "source_updated_at": "2026-11-06 00:05 Asia/Shanghai",
   "refresh_seconds": 30,
-  "tasks": {
-    "updated_at": "2026-11-05 23:52 Asia/Shanghai",
+  "today": {
     "doing": [
       {
+        "id": "yingdao-pack",
+        "owner": "Seek / Halo",
+        "title": "影刀提交数据包准备",
+        "line": "pumeng",
+        "note": "bots 只备数，提交由 liu 操作",
+        "eta": "待数据包齐",
+        "line_label": "谱梦"
+      },
+      {
         "id": "batch-v01",
-        "owner": "Kimi",
-        "title": "写 batch-v01 人声歌（3风格×3首，原创歌词+Suno提示词）",
-        "note": "batch-v01.md 已落地，待 Halo 审稿分配创作者名并试做",
-        "artifact": "batch-v01.md",
-        "artifact_ready": true
+        "owner": "Halo",
+        "title": "batch-v01 人声歌待审",
+        "line": "pumeng",
+        "note": "3风格×3首稿已落地，待审稿分配创作者名并试做",
+        "eta": "审稿后",
+        "line_label": "谱梦"
+      },
+      {
+        "id": "v4-sample",
+        "owner": "haole",
+        "title": "v4 样片待审后交 liu",
+        "line": "douyin",
+        "note": "定位：前沿 AI 工具 / 信息差 / 拥抱 AI / GitHub skills（拒工位 AI）",
+        "eta": "haole 审完",
+        "blocker": "配音克隆参考音授权不明 → 只能内审不能发",
+        "line_label": "抖音"
+      }
+    ],
+    "done_today": [
+      {
+        "id": "feishu-plan-c",
+        "owner": "谱梦组长",
+        "title": "飞书独立库方案 C",
+        "line": "pumeng",
+        "note": "只留播放快照表 + 歌曲表 + 歌手专辑表；4 首 PM-20261105-001～004",
+        "line_label": "谱梦"
       },
       {
         "id": "gemini-research",
         "owner": "Kimi",
-        "title": "查 Gemini 音乐商用/上架腾讯 + 音贝查看方式",
-        "note": "进行中"
+        "title": "Gemini / 音贝调研已交",
+        "line": "pumeng",
+        "note": "gemini-music.md；结论不能据此认定可上架结算",
+        "line_label": "谱梦"
+      },
+      {
+        "id": "dashboard-live",
+        "owner": "程序员",
+        "title": "进度监控台可用版上线",
+        "line": "pumeng",
+        "note": "GitHub Pages 公网",
+        "line_label": "谱梦"
       }
     ],
     "todo": [
       {
         "id": "registry-align",
         "owner": "Seek",
-        "title": "登记表与 batch 文件对齐，补创作者名列"
+        "title": "登记表与 batch 文件对齐，补创作者名列",
+        "line": "pumeng",
+        "line_label": "谱梦"
       },
       {
         "id": "ai-flag-verify",
         "owner": "Halo",
         "title": "核实「16首判AI、暂停结算」",
-        "note": "目前未证实"
+        "line": "pumeng",
+        "note": "目前未证实",
+        "line_label": "谱梦"
       },
       {
-        "id": "suno-pipeline",
-        "owner": "自动化运营 / Halo",
-        "title": "Suno 试做2首 → 整批 → process.sh → 试听 → 双版本发布",
-        "note": "腾讯签商务定制70%；汽水另生成或二创版（不同音频）。上架前确认。"
+        "id": "qingwa-remix",
+        "owner": "Halo",
+        "title": "青瓦辞 remix 试点（若继续）",
+        "line": "pumeng",
+        "note": "可选；不阻塞影刀主线",
+        "line_label": "谱梦"
       }
     ],
     "paused": [
       {
-        "id": "rename-237",
-        "owner": "自动化运营",
-        "title": "237首歌改名清单",
-        "note": "需手机验证，liu 说先不改"
-      },
-      {
-        "id": "amazon-dark-pro",
-        "owner": "liu",
-        "title": "Amazon Dark Pro 插件试用",
-        "note": "等 liu 自行加载体验；需要验收再排"
-      },
-      {
         "id": "qq-playlists",
         "owner": "Seek",
-        "title": "QQ 音乐歌单草案（≥15首）",
-        "note": "liu 23:51停；23:52：素材可留着以后腾讯音乐用（草案+封面）；不混外曲、不提交"
-      }
-    ],
-    "done": [
+        "title": "QQ 音乐歌单",
+        "line": "pumeng",
+        "note": "停做；素材保留；不混外曲、不提交",
+        "line_label": "谱梦"
+      },
       {
-        "id": "contract-rule",
+        "id": "rename-237",
         "owner": "Halo",
-        "title": "发布规则确认：腾讯继续商务定制；汽水发另生成/二创版",
-        "note": "liu 2026-11-05 定稿"
+        "title": "237 首歌改名清单",
+        "line": "pumeng",
+        "note": "需手机验证；liu 说先不改",
+        "line_label": "谱梦"
       },
       {
-        "id": "stop-xige",
-        "owner": "liu / Halo",
-        "title": "停掉下载改名发布（洗歌）流水线",
-        "note": "新歌走 Suno"
+        "id": "qishui-publish",
+        "owner": "Halo",
+        "title": "汽水音乐发布",
+        "line": "pumeng",
+        "note": "暂停发布；若发须另生成/二创并标 AI",
+        "line_label": "谱梦"
       },
       {
-        "id": "settlement-baseline",
-        "owner": "收益分析师 / Halo",
-        "title": "导出 8–9 月收益基线并写入 settlement/",
-        "note": "8月¥392.51 / 9月¥424.71"
+        "id": "suno-four-cancel",
+        "owner": "liu",
+        "title": "Suno 4 首改影刀由 liu 提交",
+        "line": "pumeng",
+        "note": "原 bot 代提路径取消",
+        "line_label": "谱梦"
       },
       {
-        "id": "suno-login",
-        "owner": "liu / Halo",
-        "title": "Suno Pro 账号登录到共享 box 浏览器",
-        "note": "到期 2026-12-05（账号标识不公开）"
+        "id": "voice-clone-ref",
+        "owner": "haole",
+        "title": "配音克隆参考音",
+        "line": "douyin",
+        "note": "授权不明；内审可用，禁止公开发布",
+        "blocker": "商用授权未确认",
+        "line_label": "抖音"
       }
     ]
   },
-  "bots": [
+  "lines": {
+    "pumeng": {
+      "doing": [
+        {
+          "id": "yingdao-pack",
+          "owner": "Seek / Halo",
+          "title": "影刀提交数据包准备",
+          "line": "pumeng",
+          "note": "bots 只备数，提交由 liu 操作",
+          "eta": "待数据包齐"
+        },
+        {
+          "id": "batch-v01",
+          "owner": "Halo",
+          "title": "batch-v01 人声歌待审",
+          "line": "pumeng",
+          "note": "3风格×3首稿已落地，待审稿分配创作者名并试做",
+          "eta": "审稿后"
+        }
+      ],
+      "todo": [
+        {
+          "id": "registry-align",
+          "owner": "Seek",
+          "title": "登记表与 batch 文件对齐，补创作者名列",
+          "line": "pumeng"
+        },
+        {
+          "id": "ai-flag-verify",
+          "owner": "Halo",
+          "title": "核实「16首判AI、暂停结算」",
+          "line": "pumeng",
+          "note": "目前未证实"
+        },
+        {
+          "id": "qingwa-remix",
+          "owner": "Halo",
+          "title": "青瓦辞 remix 试点（若继续）",
+          "line": "pumeng",
+          "note": "可选；不阻塞影刀主线"
+        }
+      ],
+      "paused": [
+        {
+          "id": "qq-playlists",
+          "owner": "Seek",
+          "title": "QQ 音乐歌单",
+          "line": "pumeng",
+          "note": "停做；素材保留；不混外曲、不提交"
+        },
+        {
+          "id": "rename-237",
+          "owner": "Halo",
+          "title": "237 首歌改名清单",
+          "line": "pumeng",
+          "note": "需手机验证；liu 说先不改"
+        },
+        {
+          "id": "qishui-publish",
+          "owner": "Halo",
+          "title": "汽水音乐发布",
+          "line": "pumeng",
+          "note": "暂停发布；若发须另生成/二创并标 AI"
+        },
+        {
+          "id": "suno-four-cancel",
+          "owner": "liu",
+          "title": "Suno 4 首改影刀由 liu 提交",
+          "line": "pumeng",
+          "note": "原 bot 代提路径取消"
+        }
+      ],
+      "done_today": [
+        {
+          "id": "feishu-plan-c",
+          "owner": "谱梦组长",
+          "title": "飞书独立库方案 C",
+          "line": "pumeng",
+          "note": "只留播放快照表 + 歌曲表 + 歌手专辑表；4 首 PM-20261105-001～004"
+        },
+        {
+          "id": "gemini-research",
+          "owner": "Kimi",
+          "title": "Gemini / 音贝调研已交",
+          "line": "pumeng",
+          "note": "gemini-music.md；结论不能据此认定可上架结算"
+        },
+        {
+          "id": "dashboard-live",
+          "owner": "程序员",
+          "title": "进度监控台可用版上线",
+          "line": "pumeng",
+          "note": "GitHub Pages 公网"
+        }
+      ]
+    },
+    "douyin": {
+      "doing": [
+        {
+          "id": "v4-sample",
+          "owner": "haole",
+          "title": "v4 样片待审后交 liu",
+          "line": "douyin",
+          "note": "定位：前沿 AI 工具 / 信息差 / 拥抱 AI / GitHub skills（拒工位 AI）",
+          "eta": "haole 审完",
+          "blocker": "配音克隆参考音授权不明 → 只能内审不能发"
+        }
+      ],
+      "todo": [],
+      "paused": [
+        {
+          "id": "voice-clone-ref",
+          "owner": "haole",
+          "title": "配音克隆参考音",
+          "line": "douyin",
+          "note": "授权不明；内审可用，禁止公开发布",
+          "blocker": "商用授权未确认"
+        }
+      ],
+      "done_today": []
+    }
+  },
+  "decisions": [
     {
-      "name": "Halo",
-      "role": "主管 / 谱梦音乐经营",
-      "focus": "决策、分工、确认上架与费用"
+      "id": "ask-tme-legal",
+      "title": "是否书面问 TME，并由法务审 Google/Gemini 条款后再谈上架结算",
+      "note": "调研结论：不能据此认定可当 AI 原创上架结算",
+      "owner": "liu"
     },
     {
-      "name": "自动化运营",
-      "role": "后台与发布操作",
-      "focus": "腾讯后台、发布、影刀相关运维"
-    },
-    {
-      "name": "Kimi 市场研究员",
-      "role": "调研与文案",
-      "focus": "合规调研、歌词与提示词、政策"
-    },
-    {
-      "name": "Seek 歌曲资产",
-      "role": "曲库与登记",
-      "focus": "登记表、去重、歌单、创作者名列"
-    },
-    {
-      "name": "收益分析师",
-      "role": "播放与结算分析",
-      "focus": "收益基线、品类、目标追踪"
-    },
-    {
-      "name": "程序员",
-      "role": "工具开发（按需）",
-      "focus": "脚本、插件；非日常音乐执行"
+      "id": "voice-ref-commercial",
+      "title": "抖音配音参考音是否继续寻找可商用授权源",
+      "note": "当前参考音授权不明，样片仅可内审",
+      "owner": "liu"
     }
   ],
-  "pipeline": {
-    "stages": [
-      {
-        "name": "策划稿 batch-v01",
-        "count": 1,
-        "note": "已落地"
-      },
-      {
-        "name": "Suno 待处理 incoming",
-        "count": 4
-      },
-      {
-        "name": "母带 mastered",
-        "count": 4
-      },
-      {
-        "name": "质检报告 reports",
-        "count": 4
-      },
-      {
-        "name": "登记表模板",
-        "count": 1
-      },
-      {
-        "name": "历史 batch-01 wav",
-        "count": 5,
-        "note": "旧批次，非 Suno 流水线"
-      },
-      {
-        "name": "历史 batch-02 wav",
-        "count": 10,
-        "note": "旧批次，非 Suno 流水线"
-      }
-    ]
-  },
-  "revenue": {
-    "source": "腾讯音乐人结算导出（聚合）",
-    "window": "2026-08 + 2026-09（10/11 未出账）",
-    "monthly": [
-      {
-        "month": "2026-08",
-        "status": "已出账",
-        "bill_yuan": 392.51
-      },
-      {
-        "month": "2026-09",
-        "status": "已出账",
-        "bill_yuan": 424.71
-      },
-      {
-        "month": "2026-10",
-        "status": "未出账"
-      },
-      {
-        "month": "2026-11",
-        "status": "未出账"
-      }
-    ],
-    "aug_sep_bill_total_yuan": 817.22,
-    "songs_in_detail": 859,
-    "positive_earning_songs": 87,
-    "positive_share_pct": 10.13,
-    "positive_mean_yuan": 9.39,
-    "positive_median_yuan": 6.97,
-    "goals": {
-      "horizon": "约两个月（新歌沉淀后）",
-      "new_song_avg_above_yuan": 9.0,
-      "positive_share_above_pct": 10.0
-    },
-    "by_category": [
-      {
-        "category": "轻音乐",
-        "songs": 218,
-        "total_yuan": 200.47,
-        "positive_songs": 24
-      },
-      {
-        "category": "白噪音",
-        "songs": 171,
-        "total_yuan": 147.86,
-        "positive_songs": 14
-      },
-      {
-        "category": "脑波",
-        "songs": 91,
-        "total_yuan": 141.24,
-        "positive_songs": 14
-      },
-      {
-        "category": "冥想",
-        "songs": 93,
-        "total_yuan": 116.77,
-        "positive_songs": 11
-      },
-      {
-        "category": "婴儿哄睡",
-        "songs": 110,
-        "total_yuan": 103.11,
-        "positive_songs": 14
-      },
-      {
-        "category": "中医养生古筝",
-        "songs": 132,
-        "total_yuan": 97.17,
-        "positive_songs": 7
-      },
-      {
-        "category": "钢琴哄睡",
-        "songs": 43,
-        "total_yuan": 10.54,
-        "positive_songs": 3
-      },
-      {
-        "category": "其他",
-        "songs": 1,
-        "total_yuan": 0.0,
-        "positive_songs": 0
-      }
-    ]
-  },
-  "suno": {
-    "plan": "Pro",
-    "ends_on": "2026-12-05",
-    "days_left": 29,
-    "note": "商用权仅覆盖付费期内生成并下载的作品；账号标识不在此公开。"
-  },
-  "routines": [
+  "timeline": [
     {
-      "when": "每天 08:30",
-      "what": "科技资讯日报"
+      "date": "2026-11-06",
+      "did": [
+        "进度监控台公网上线并按成品标准改版（双线 / 拍板 / 7 日时间线）"
+      ],
+      "closed": [],
+      "opened": [
+        "影刀提交数据包准备",
+        "需 liu 拍板：TME/法务、配音参考音商用"
+      ]
     },
     {
-      "when": "每天 12:00 / 16:00 / 20:00",
-      "what": "重大事件提醒"
+      "date": "2026-11-05",
+      "did": [
+        "飞书独立库方案 C（播放快照 + 歌曲表 + 歌手专辑表；PM-20261105-001～004）",
+        "Gemini/音贝调研交稿 gemini-music.md",
+        "抖音线定位改为前沿 AI 工具/信息差/拥抱 AI/GitHub skills",
+        "v4 样片落地待审"
+      ],
+      "closed": [
+        "QQ 歌单（停做，素材保留）",
+        "Suno 4 首 bot 代提（改影刀由 liu 提交）",
+        "gemini-research（已交，移出 doing）"
+      ],
+      "opened": [
+        "batch-v01 待审",
+        "影刀主线备数"
+      ]
     },
     {
-      "when": "每周日 20:00",
-      "what": "团队复盘"
+      "date": "2026-11-04",
+      "did": [],
+      "closed": [],
+      "opened": []
+    },
+    {
+      "date": "2026-11-03",
+      "did": [],
+      "closed": [],
+      "opened": []
+    },
+    {
+      "date": "2026-11-02",
+      "did": [],
+      "closed": [],
+      "opened": []
+    },
+    {
+      "date": "2026-11-01",
+      "did": [],
+      "closed": [],
+      "opened": []
+    },
+    {
+      "date": "2026-10-31",
+      "did": [],
+      "closed": [],
+      "opened": []
     }
   ],
-  "publish_rules": {
-    "tencent": "商务定制协议（机构原创分成 70%），不改签",
-    "qishui": "不发同一音频；另生成或二创版本上架，并标注 AI",
-    "vocal": "新人声歌，不做纯音乐为主线"
+  "metrics": {
+    "songs_on_platform_approx": 4700,
+    "feishu_base": "谱梦作品库",
+    "feishu_tables": {
+      "play_snapshots": 3213,
+      "songs": 4,
+      "artist_albums": 4
+    },
+    "pm_ids_count": 4
   },
-  "disclaimer": "本页仅含进度与聚合数字，不含单曲收益明细、账号、密钥或验证码。"
+  "disclaimer": "本页仅含进度与聚合数字，不含单曲收益明细、账号、密钥或飞书原文。"
 }
