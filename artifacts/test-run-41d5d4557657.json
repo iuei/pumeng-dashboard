@@ -1,0 +1,19 @@
+{
+  "tested_code_sha": "41d5d4557657f4fb049601361b5697e2e9d71edf",
+  "evidence_note": "A later commit may add only this log set. The package source_commit stays the tested code SHA.",
+  "baseline_main": "783d57502e797a748ec5c64b757a111236d20c95",
+  "code_anchor": "41d5d4557657f4fb049601361b5697e2e9d71edf",
+  "code_anchor_is_not_auto_approved": true,
+  "historical_ui_commit_not_this_license": "c4b48e8d07dc4fc8d2ce91929713bca67ad1e045",
+  "package": "pumeng-incremental-41d5d4557657.tar.gz",
+  "package_sha256": "6f06aae253601daa7746dfc4c48a005eedefa2c5278341a4dba8974a4913c4ec",
+  "python_log_sha256": "0a225411b423733ca3855b097e6e4415b0689090c69cdf01e678607ca713b66f",
+  "node_log_sha256": "88dc491908cf3dd4b68d2703889ce5ac44b595f398ab5f49548e00a2146089b2",
+  "race_log_sha256": "42c1e33de8591b9b31222eba3f28836edeb9d05d9062e865c8b257a81019f334",
+  "python_tail": [
+    "",
+    "OK"
+  ],
+  "original_prepush_detector": "kept unchanged; it only arms on '+', so a lease command does not count as a pass",
+  "inputs": "synthetic"
+}

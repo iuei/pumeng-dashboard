@@ -1,0 +1,128 @@
+{
+  "label": "semantic-equivalent-observer",
+  "windows": [
+    {
+      "window": "update",
+      "status": "rollback_failed",
+      "rolled_back": false,
+      "git_push_ok": false,
+      "baseline_advanced": false,
+      "network_publisher_after": false,
+      "foreign": "1c68ae897333e3015a4ee2129269a67295cb3486",
+      "final_main": "1c68ae897333e3015a4ee2129269a67295cb3486",
+      "foreign_still_main": true,
+      "local_head": "e1a84547e8cabae61705f0df59ddc93d133146c7",
+      "product_argv": [
+        "git",
+        "-C",
+        "/tmp/tmpy6d0em_0/update/install/.pages-repo",
+        "push",
+        "--force-with-lease=refs/heads/main:2675c3d8fc0dd3be4b1b2eda75a4b0c1f5d41ec4",
+        "file:///tmp/tmpy6d0em_0/update/bare.git",
+        "e1a84547e8cabae61705f0df59ddc93d133146c7:refs/heads/main"
+      ],
+      "executed_argv": [
+        "/usr/bin/git",
+        "-C",
+        "/tmp/tmpy6d0em_0/update/install/.pages-repo",
+        "push",
+        "--force-with-lease=refs/heads/main:2675c3d8fc0dd3be4b1b2eda75a4b0c1f5d41ec4",
+        "file:///tmp/tmpy6d0em_0/update/bare.git",
+        "e1a84547e8cabae61705f0df59ddc93d133146c7:refs/heads/main"
+      ],
+      "stderr": "To file:///tmp/tmpy6d0em_0/update/bare.git\n ! [rejected]        e1a84547e8cabae61705f0df59ddc93d133146c7 -> main (stale info)\nerror: failed to push some refs to 'file:///tmp/tmpy6d0em_0/update/bare.git'\n",
+      "injection": {
+        "label": "semantic-equivalent-observer",
+        "kind": "update",
+        "foreign": "1c68ae897333e3015a4ee2129269a67295cb3486",
+        "parent": "2675c3d8fc0dd3be4b1b2eda75a4b0c1f5d41ec4",
+        "refspec": "1c68ae897333e3015a4ee2129269a67295cb3486:refs/heads/main",
+        "forced": false,
+        "returncode": 0,
+        "stderr": "To file:///tmp/tmpy6d0em_0/update/bare.git\n   2675c3d..1c68ae8  1c68ae897333e3015a4ee2129269a67295cb3486 -> main\n"
+      }
+    },
+    {
+      "window": "delete",
+      "status": "rollback_failed",
+      "rolled_back": false,
+      "git_push_ok": false,
+      "baseline_advanced": false,
+      "network_publisher_after": false,
+      "foreign": "50bfa1240912a079af5e5d11f4031faf9431335a",
+      "final_main": "50bfa1240912a079af5e5d11f4031faf9431335a",
+      "foreign_still_main": true,
+      "local_head": "433104cdfcdeaa65bcae5a7a7e25d4a083a8e6ab",
+      "product_argv": [
+        "git",
+        "-C",
+        "/tmp/tmpy6d0em_0/delete/install/.pages-repo",
+        "push",
+        "--force-with-lease=refs/heads/main:51747369bcdf4d8d123602394891b33e3c959c63",
+        "file:///tmp/tmpy6d0em_0/delete/bare.git",
+        ":refs/heads/main"
+      ],
+      "executed_argv": [
+        "/usr/bin/git",
+        "-C",
+        "/tmp/tmpy6d0em_0/delete/install/.pages-repo",
+        "push",
+        "--force-with-lease=refs/heads/main:51747369bcdf4d8d123602394891b33e3c959c63",
+        "file:///tmp/tmpy6d0em_0/delete/bare.git",
+        ":refs/heads/main"
+      ],
+      "stderr": "To file:///tmp/tmpy6d0em_0/delete/bare.git\n ! [rejected]        (delete) -> main (stale info)\nerror: failed to push some refs to 'file:///tmp/tmpy6d0em_0/delete/bare.git'\n",
+      "injection": {
+        "label": "semantic-equivalent-observer",
+        "kind": "delete",
+        "foreign": "50bfa1240912a079af5e5d11f4031faf9431335a",
+        "parent": "51747369bcdf4d8d123602394891b33e3c959c63",
+        "refspec": "50bfa1240912a079af5e5d11f4031faf9431335a:refs/heads/main",
+        "forced": false,
+        "returncode": 0,
+        "stderr": "To file:///tmp/tmpy6d0em_0/delete/bare.git\n   5174736..50bfa12  50bfa1240912a079af5e5d11f4031faf9431335a -> main\n"
+      }
+    },
+    {
+      "window": "recreate",
+      "status": "rollback_failed",
+      "rolled_back": false,
+      "git_push_ok": false,
+      "baseline_advanced": false,
+      "network_publisher_after": false,
+      "foreign": "3432677b961294eb52b804485cbd37b297f7c36b",
+      "final_main": "3432677b961294eb52b804485cbd37b297f7c36b",
+      "foreign_still_main": true,
+      "local_head": "433104cdfcdeaa65bcae5a7a7e25d4a083a8e6ab",
+      "product_argv": [
+        "git",
+        "-C",
+        "/tmp/tmpy6d0em_0/recreate/install/.pages-repo",
+        "push",
+        "--force-with-lease=refs/heads/main:",
+        "file:///tmp/tmpy6d0em_0/recreate/bare.git",
+        "433104cdfcdeaa65bcae5a7a7e25d4a083a8e6ab:refs/heads/main"
+      ],
+      "executed_argv": [
+        "/usr/bin/git",
+        "-C",
+        "/tmp/tmpy6d0em_0/recreate/install/.pages-repo",
+        "push",
+        "--force-with-lease=refs/heads/main:",
+        "file:///tmp/tmpy6d0em_0/recreate/bare.git",
+        "433104cdfcdeaa65bcae5a7a7e25d4a083a8e6ab:refs/heads/main"
+      ],
+      "stderr": "To file:///tmp/tmpy6d0em_0/recreate/bare.git\n ! [rejected]        433104cdfcdeaa65bcae5a7a7e25d4a083a8e6ab -> main (stale info)\nerror: failed to push some refs to 'file:///tmp/tmpy6d0em_0/recreate/bare.git'\n",
+      "injection": {
+        "label": "semantic-equivalent-observer",
+        "kind": "recreate",
+        "foreign": "3432677b961294eb52b804485cbd37b297f7c36b",
+        "parent": "433104cdfcdeaa65bcae5a7a7e25d4a083a8e6ab",
+        "refspec": "3432677b961294eb52b804485cbd37b297f7c36b:refs/heads/main",
+        "forced": false,
+        "returncode": 0,
+        "stderr": "To file:///tmp/tmpy6d0em_0/recreate/bare.git\n * [new branch]      3432677b961294eb52b804485cbd37b297f7c36b -> main\n"
+      }
+    }
+  ]
+}
