@@ -1,0 +1,27 @@
+{
+  "_fixture": true,
+  "title": "谱梦 · 进度监控",
+  "updated_at": "not-a-date",
+  "today": {
+    "doing": [
+      {
+        "id": "u1",
+        "title": "无进度字段的事项",
+        "note": "短说明",
+        "blocker": "原因未写天数"
+      },
+      {
+        "id": "u2",
+        "title": "无百分比的进行中",
+        "note": "没有 progress 字段"
+      }
+    ]
+  },
+  "decisions": [
+    {"id": "d1", "title": "未写截止日期的决定"}
+  ],
+  "timeline": [
+    {"date": "2026-11-06", "did": [], "closed": [], "opened": []}
+  ],
+  "metrics": {"songs_on_platform_approx": null}
+}

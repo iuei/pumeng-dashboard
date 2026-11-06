@@ -1,0 +1,107 @@
+{
+  "tested_code_sha": "100451dfbffca33da2fbe989d77d66fc88661caf",
+  "python_ran": "Ran 34 tests in 0.252s",
+  "python_ok": true,
+  "proof_lines": [
+    "test_dead_lock_is_reclaimed_and_live_lock_is_not (test_production_adapter.ProductionAdapterTests.test_dead_lock_is_reclaimed_and_live_lock_is_not) ... ok",
+    "test_file_bare_pushes_candidate_bytes_and_rolls_back_when_pages_mismatch (test_production_adapter.ProductionAdapterTests.test_file_bare_pushes_candidate_bytes_and_rolls_back_when_pages_mismatch) ... ok"
+  ],
+  "fold": {
+    "defaultState": true,
+    "metricsBottom": 960.109375,
+    "metricsTop": 826.546875,
+    "viewport": 1080,
+    "openDisclosures": 0,
+    "fontPx": {
+      "title": 43,
+      "section": 27,
+      "card": 24,
+      "body": 20,
+      "button": 20,
+      "metric": 42,
+      "pill": 16
+    }
+  },
+  "files": [
+    {
+      "name": "test-python.log",
+      "bytes": 5493,
+      "sha256": "15f0f27d4600b1519627502e3669695eab450c52265313cf6d3f79774f9b0e9b",
+      "identical": true
+    },
+    {
+      "name": "test-python-100451dfbffc.log",
+      "bytes": 5493,
+      "sha256": "15f0f27d4600b1519627502e3669695eab450c52265313cf6d3f79774f9b0e9b",
+      "identical": true
+    },
+    {
+      "name": "test-python-repair-final.log",
+      "bytes": 5493,
+      "sha256": "15f0f27d4600b1519627502e3669695eab450c52265313cf6d3f79774f9b0e9b",
+      "identical": true
+    },
+    {
+      "name": "test-node.log",
+      "bytes": 1881,
+      "sha256": "c48cc9a01e5fa551bb40d5e7e8e6c80dacb1b5d864596c9addeeb750aa41de60",
+      "identical": true
+    },
+    {
+      "name": "test-node-100451dfbffc.log",
+      "bytes": 1881,
+      "sha256": "c48cc9a01e5fa551bb40d5e7e8e6c80dacb1b5d864596c9addeeb750aa41de60",
+      "identical": true
+    },
+    {
+      "name": "test-node-repair-final.log",
+      "bytes": 1881,
+      "sha256": "c48cc9a01e5fa551bb40d5e7e8e6c80dacb1b5d864596c9addeeb750aa41de60",
+      "identical": true
+    },
+    {
+      "name": "test-browser.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    },
+    {
+      "name": "test-browser-100451dfbffc.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    },
+    {
+      "name": "test-browser-repair-final.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    }
+  ],
+  "screenshots": {
+    "desktop-1920x1080.png": {
+      "bytes": 380842,
+      "mtime": 1793937655.9611952,
+      "sha256": "503bebe01eba65986a266ed7ee6951bdd4afce899705346fb2b3f3b030d0b4e7",
+      "identical": true
+    },
+    "mobile-390x844.png": {
+      "bytes": 334892,
+      "mtime": 1793937656.4611907,
+      "sha256": "ef4324e6e4ca4659a20f8dd0fc26f2f9217f57ca42a68bfff861c6967e1d6810",
+      "identical": true
+    },
+    "mobile-320x700.png": {
+      "bytes": 334255,
+      "mtime": 1793937656.6091895,
+      "sha256": "c9223b2e36ffaa50494772543ff52edcb3e59df9062ccdbf963f5bde6ffb4bb2",
+      "identical": true
+    },
+    "browser-check.json": {
+      "bytes": 704,
+      "mtime": 1793937658.989168,
+      "sha256": "5e271010bffe180254a539cce0ee650d2d5b6db366d006b77213e99540db3ab7",
+      "identical": true
+    }
+  }
+}

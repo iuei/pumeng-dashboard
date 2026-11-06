@@ -1,0 +1,105 @@
+{
+  "tested_code_sha": "761e95fb62784d90b316132a4e2e14764b5e0719",
+  "note": "This run targeted the tree above. A later commit may add these logs and must not be cited as the tested tree.",
+  "python_ran": "Ran 32 tests in 0.136s",
+  "python_ok": true,
+  "adapter_and_replacement_result_lines": [
+    "test_baseline_advance_failure_keeps_the_previous_file (test_production_adapter.ProductionAdapterTests.test_baseline_advance_failure_keeps_the_previous_file) ... ok",
+    "test_cli_does_not_network_or_read_token_and_legacy_flags_cannot_bypass (test_production_adapter.ProductionAdapterTests.test_cli_does_not_network_or_read_token_and_legacy_flags_cannot_bypass) ... ok",
+    "test_plan_push_has_no_token_and_rejects_credential_urls (test_production_adapter.ProductionAdapterTests.test_plan_push_has_no_token_and_rejects_credential_urls) ... ok",
+    "test_release_cannot_be_minted_by_the_checker (test_production_adapter.ProductionAdapterTests.test_release_cannot_be_minted_by_the_checker) ... ok",
+    "test_stale_large_slot_and_concurrency_do_not_publish (test_production_adapter.ProductionAdapterTests.test_stale_large_slot_and_concurrency_do_not_publish) ... ok",
+    "test_success_advances_only_after_pages_verify_and_retry_is_idempotent (test_production_adapter.ProductionAdapterTests.test_success_advances_only_after_pages_verify_and_retry_is_idempotent) ... ok",
+    "test_manual_and_scheduled_share_judgment_and_stale_approval_does_not_advance (test_replacement.ReplacementTests.test_manual_and_scheduled_share_judgment_and_stale_approval_does_not_advance) ... ok",
+    "test_old_style_shell_does_not_call_git_or_gh (test_replacement.ReplacementTests.test_old_style_shell_does_not_call_git_or_gh) ... ok",
+    "test_pipeline_rejects_secret_and_keeps_baseline (test_replacement.ReplacementTests.test_pipeline_rejects_secret_and_keeps_baseline) ... ok",
+    "test_production_flags_are_refused_and_preview_does_not_publish (test_replacement.ReplacementTests.test_production_flags_are_refused_and_preview_does_not_publish) ... ok",
+    "test_schema_hides_pm_ids_and_flattens_lines (test_replacement.ReplacementTests.test_schema_hides_pm_ids_and_flattens_lines) ... ok",
+    "test_sensitive_material_fails_closed_without_echoing_the_value (test_replacement.ReplacementTests.test_sensitive_material_fails_closed_without_echoing_the_value) ... ok"
+  ],
+  "adapter_and_replacement_count": 12,
+  "browser": "BROWSER_OK",
+  "fold": {
+    "defaultState": true,
+    "metricsBottom": 1040.578125,
+    "metricsTop": 891.78125,
+    "viewport": 1080,
+    "openDisclosures": 0
+  },
+  "files": [
+    {
+      "name": "test-python.log",
+      "bytes": 5137,
+      "sha256": "10f071b480c4b8358816c70d7935d34ecb7644343c9202a8c4db0ee884526ab5",
+      "identical": true
+    },
+    {
+      "name": "test-python-761e95fb6278.log",
+      "bytes": 5137,
+      "sha256": "10f071b480c4b8358816c70d7935d34ecb7644343c9202a8c4db0ee884526ab5",
+      "identical": true
+    },
+    {
+      "name": "test-python-adapter-final.log",
+      "bytes": 5137,
+      "sha256": "10f071b480c4b8358816c70d7935d34ecb7644343c9202a8c4db0ee884526ab5",
+      "identical": true
+    },
+    {
+      "name": "test-node.log",
+      "bytes": 1879,
+      "sha256": "362152eb8980fbd20555700b14172990b1fa7ae181e79563486ac7d58086c42b",
+      "identical": true
+    },
+    {
+      "name": "test-node-761e95fb6278.log",
+      "bytes": 1879,
+      "sha256": "362152eb8980fbd20555700b14172990b1fa7ae181e79563486ac7d58086c42b",
+      "identical": true
+    },
+    {
+      "name": "test-node-adapter-final.log",
+      "bytes": 1879,
+      "sha256": "362152eb8980fbd20555700b14172990b1fa7ae181e79563486ac7d58086c42b",
+      "identical": true
+    },
+    {
+      "name": "test-browser.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    },
+    {
+      "name": "test-browser-761e95fb6278.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    },
+    {
+      "name": "test-browser-adapter-final.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    }
+  ],
+  "screenshots": {
+    "desktop-1920x1080.png": {
+      "bytes": 303941,
+      "mtime_epoch": 1793936264.917306,
+      "sha256": "f6bbcb2bf6691e0e1ae28d260c8d2ad8d6282bd72350435e029e97bc3bf4635d",
+      "identical": false
+    },
+    "mobile-390x844.png": {
+      "bytes": 334965,
+      "mtime_epoch": 1793936265.3853047,
+      "sha256": "6c9ec754afbdd44ffc97a42406a7534b63164813c98c8d5e5a92a4e28430c9f4",
+      "identical": false
+    },
+    "browser-check.json": {
+      "bytes": 548,
+      "mtime_epoch": 1793936267.7612977,
+      "sha256": "1ad3a381bdf515894dd4e2f0269330f070c1dd57a75d1484cfb4ddd760f9f713",
+      "identical": false
+    }
+  }
+}

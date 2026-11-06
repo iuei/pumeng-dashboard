@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "defaultState": true,
+  "base": "http://127.0.0.1:34187",
+  "columns": {
+    "desktop": {
+      "width": 1920,
+      "decisions": "895px 895px",
+      "today": "442.5px 442.5px 442.5px 442.5px",
+      "metrics": "442.5px 442.5px 442.5px 442.5px"
+    },
+    "mobile": {
+      "width": 390,
+      "decisions": "362px",
+      "today": "362px",
+      "metrics": "362px"
+    }
+  },
+  "fold": {
+    "defaultState": true,
+    "metricsBottom": 960.109375,
+    "metricsTop": 826.546875,
+    "viewport": 1080,
+    "openDisclosures": 0,
+    "fontPx": {
+      "title": 43,
+      "section": 27,
+      "card": 24,
+      "body": 20,
+      "button": 20,
+      "metric": 42,
+      "pill": 16
+    }
+  }
+}

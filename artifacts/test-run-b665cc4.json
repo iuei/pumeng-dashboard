@@ -1,0 +1,82 @@
+{
+  "tested_code_sha": "b665cc4d8677235c728dd8ced390d8efa0dbaffa",
+  "python_ran": "Ran 36 tests in 0.408s",
+  "python_ok": true,
+  "proof_lines": [
+    "test_empty_bare_deletes_main_when_pages_do_not_match (test_production_adapter.ProductionAdapterTests.test_empty_bare_deletes_main_when_pages_do_not_match) ... ok",
+    "test_file_bare_pushes_candidate_bytes_and_rolls_back_when_pages_mismatch (test_production_adapter.ProductionAdapterTests.test_file_bare_pushes_candidate_bytes_and_rolls_back_when_pages_mismatch) ... ok",
+    "test_rejected_rollback_does_not_report_push_success (test_production_adapter.ProductionAdapterTests.test_rejected_rollback_does_not_report_push_success) ... ok"
+  ],
+  "fold": {
+    "defaultState": true,
+    "metricsBottom": 960.109375,
+    "metricsTop": 826.546875,
+    "viewport": 1080,
+    "openDisclosures": 0,
+    "fontPx": {
+      "title": 43,
+      "section": 27,
+      "card": 24,
+      "body": 20,
+      "button": 20,
+      "metric": 42,
+      "pill": 16
+    }
+  },
+  "files": [
+    {
+      "name": "test-python.log",
+      "bytes": 5815,
+      "sha256": "dc7f6ac5ec0c6521281bd46d1a504aa99eeebf0623f84078cea23220a9f54877",
+      "identical": true
+    },
+    {
+      "name": "test-python-b665cc4d8677.log",
+      "bytes": 5815,
+      "sha256": "dc7f6ac5ec0c6521281bd46d1a504aa99eeebf0623f84078cea23220a9f54877",
+      "identical": true
+    },
+    {
+      "name": "test-python-b1-final.log",
+      "bytes": 5815,
+      "sha256": "dc7f6ac5ec0c6521281bd46d1a504aa99eeebf0623f84078cea23220a9f54877",
+      "identical": true
+    },
+    {
+      "name": "test-node.log",
+      "bytes": 1879,
+      "sha256": "228dfe2ee730c10a2a8d750326c5e7299b25f794c4d340311bbde8ca704f399a",
+      "identical": true
+    },
+    {
+      "name": "test-node-b665cc4d8677.log",
+      "bytes": 1879,
+      "sha256": "228dfe2ee730c10a2a8d750326c5e7299b25f794c4d340311bbde8ca704f399a",
+      "identical": true
+    },
+    {
+      "name": "test-node-b1-final.log",
+      "bytes": 1879,
+      "sha256": "228dfe2ee730c10a2a8d750326c5e7299b25f794c4d340311bbde8ca704f399a",
+      "identical": true
+    },
+    {
+      "name": "test-browser.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    },
+    {
+      "name": "test-browser-b665cc4d8677.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    },
+    {
+      "name": "test-browser-b1-final.log",
+      "bytes": 11,
+      "sha256": "29406c3a0f2541f19f772630999465020072ae77bb4e7751221201394a5f794a",
+      "identical": true
+    }
+  ]
+}

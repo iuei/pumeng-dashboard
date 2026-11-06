@@ -1,0 +1,6 @@
+.pumeng-update-out/
+.test-tools/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/

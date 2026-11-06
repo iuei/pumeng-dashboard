@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: warning sentence is exact
+ok 1 - warning sentence is exact
+  ---
+  duration_ms: 0.660894
+  type: 'test'
+  ...
+# Subtest: fixture urls stay inside the repo allowlist
+ok 2 - fixture urls stay inside the repo allowlist
+  ---
+  duration_ms: 0.540086
+  type: 'test'
+  ...
+# Subtest: freshness boundaries use the snapshot clock, not a business SLA name
+ok 3 - freshness boundaries use the snapshot clock, not a business SLA name
+  ---
+  duration_ms: 0.983819
+  type: 'test'
+  ...
+# Subtest: shanghai formatting does not follow the machine zone
+ok 4 - shanghai formatting does not follow the machine zone
+  ---
+  duration_ms: 11.48129
+  type: 'test'
+  ...
+# Subtest: metrics use snapshot fields and unknown instead of example numbers
+ok 5 - metrics use snapshot fields and unknown instead of example numbers
+  ---
+  duration_ms: 0.272634
+  type: 'test'
+  ...
+# Subtest: timeline red dot is opened or keyword, not a fabricated percent
+ok 6 - timeline red dot is opened or keyword, not a fabricated percent
+  ---
+  duration_ms: 0.196794
+  type: 'test'
+  ...
+# Subtest: missing progress and blocked days stay unverified
+ok 7 - missing progress and blocked days stay unverified
+  ---
+  duration_ms: 0.217459
+  type: 'test'
+  ...
+# Subtest: lines bucket does not duplicate today ids
+ok 8 - lines bucket does not duplicate today ids
+  ---
+  duration_ms: 0.261373
+  type: 'test'
+  ...
+# Subtest: local records store identity and snapshot stamps and can be revoked
+ok 9 - local records store identity and snapshot stamps and can be revoked
+  ---
+  duration_ms: 1.714624
+  type: 'test'
+  ...
+# Subtest: corrupt local storage is not overwritten by a read
+ok 10 - corrupt local storage is not overwritten by a read
+  ---
+  duration_ms: 0.28785
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 61.69584
