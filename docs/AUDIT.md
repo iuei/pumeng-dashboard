@@ -40,6 +40,18 @@
 
 页面侧没有业务回写。所以「去决策 / 标记已处理」只写入这台浏览器的 `localStorage`，固定标明「仅本浏览器，未写回业务源，不等于工作完成」。正式回写入口：本仓库不存在，本次未调用。
 
+## 代码门、模拟验证、生产控制
+
+三者不要混写。
+
+已实现的代码门只在 `scripts/check_update.py`：`--publish` 拒绝，审批绕过拒绝，`PUMENG_ALLOW_PRODUCTION_PUBLISH` 不打开发布，模拟发布必须绑定当前候选哈希，槽外的定时调用不生成候选。手动 `--trigger manual` 可以在槽外把变化留在本地候选里，但不能靠手动把 `--publish` 变成发布。
+
+已模拟验证是本仓库测试调用上述入口，以及 `scripts/publish_paths.py` 在传入“请真正调用外部发布器”时仍不调用它。没有对 GitHub 发起真实的 push、merge、dispatch 或 Contents API 写入。
+
+尚未配置的生产控制：规则集为 0；经典分支保护接口 403，不能当成已开启；Pages 仍从 `main` 构建，环境也允许 `gh-pages`。合并 PR 或推 `main` 仍会发布页面。动态 workflow 的手动触发没有在生产侧被我们关掉，也没有用真实 dispatch 去试。
+
+未覆盖：`publish.sh` 不在仓库。Contents API 没有客户端，令牌能力未改、也未测。haole 的冻结回执明确只改了 routine 文字，没有改这些东西，也没有做手动绕过测试。所以 routine 文字不是硬门，不能写成手动路径已经不可绕过。
+
 ## 推送判断
 
 `cursor/dashboard-update-gate-75bb` 不是 `main`，也不是 `gh-pages`。这次不新增 workflow。按上面的 Pages 源和分支策略，推这个分支、开一个不合并的 PR，不会更新 `https://iuei.github.io/pumeng-dashboard/`。

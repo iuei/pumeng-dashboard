@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from pumeng_update import (  # noqa: E402
     BEIJING_HOURS,
+    SLOT_TOLERANCE_MINUTES,
     SEMANTIC_IGNORE_KEYS,
     is_beijing_slot,
     semantic_sha256,
@@ -137,12 +138,19 @@ class UpdateGateTests(unittest.TestCase):
 
     def test_slots_match_beijing_hours_only(self):
         self.assertEqual(BEIJING_HOURS, {9, 12, 15, 18, 21})
+        self.assertEqual(SLOT_TOLERANCE_MINUTES, 15)
         for hour in (9, 12, 15, 18, 21):
-            self.assertTrue(is_beijing_slot(datetime(2026, 11, 6, hour, 59, tzinfo=CST)))
-            self.assertFalse(is_beijing_slot(datetime(2026, 11, 6, hour - 1, 59, tzinfo=CST)))
+            center = datetime(2026, 11, 6, hour, 0, tzinfo=CST)
+            self.assertTrue(is_beijing_slot(center))
+            self.assertTrue(is_beijing_slot(center + timedelta(minutes=15)))
+            self.assertTrue(is_beijing_slot(center - timedelta(minutes=15)))
+            self.assertFalse(is_beijing_slot(center + timedelta(minutes=16)))
+            self.assertFalse(is_beijing_slot(center - timedelta(minutes=16)))
+            self.assertFalse(is_beijing_slot(center.replace(minute=59)))
         self.assertFalse(is_beijing_slot(datetime(2026, 11, 6, 8, 7, tzinfo=CST)))
         self.assertFalse(is_beijing_slot(datetime(2026, 11, 6, 0, 20, tzinfo=CST)))
         self.assertTrue(is_beijing_slot(datetime(2026, 11, 6, 1, 0, tzinfo=timezone.utc)))
+        self.assertTrue(is_beijing_slot(datetime(2026, 11, 6, 0, 50, tzinfo=timezone.utc)))
         self.assertFalse(is_beijing_slot(datetime(2026, 11, 6, 0, 30, tzinfo=timezone.utc)))
         with self.assertRaises(ValueError):
             is_beijing_slot(datetime(2026, 11, 6, 9, 0))

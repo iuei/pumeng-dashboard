@@ -30,7 +30,11 @@ python3 scripts/check_update.py \
 
 ## 槽
 
-Asia/Shanghai 的 9、12、15、18、21 点，整点小时都算在槽内（09:00–09:59）。08:07、00:20 不算。UTC 会先换算到上海。
+Asia/Shanghai 的 9:00、12:00、15:00、18:00、21:00，前后 15 分钟算在槽内（含 08:45 和 09:15，不含 08:44 和 09:16）。08:07、00:20 不算。UTC 会先换算到上海。
+
+这个窗口只决定定时调用算不算“到点检查”。人在槽内执行 `--publish` 一样被拒绝。管理侧 routine 文字里的冻结不是这个窗口的实现，也不是手动入口的锁。
+
+`python3 scripts/check_update.py --list-paths` 打印路径分类。`production_control_configured` 为 false。分类不是 GitHub 保护，也不是 `publish.sh` 的行为证明。
 
 ## 语义差异
 

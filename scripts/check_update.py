@@ -14,6 +14,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from publish_paths import list_paths
 from pumeng_update import SHANGHAI, env_requests_bypass, execute
 
 
@@ -28,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--publish", action="store_true", help="始终拒绝")
     parser.add_argument("--bypass-approval", action="store_true", help="始终拒绝")
     parser.add_argument("--seed-baseline", action="store_true", help="仅在没有成功基线时登记当前文件")
+    parser.add_argument("--list-paths", action="store_true", help="打印发布路径分类，不发布")
     parser.add_argument("--out", default=".pumeng-update-out")
     return parser
 
@@ -62,6 +64,11 @@ def load_approval(path: str | None):
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
+    bypass = bool(args.bypass_approval or env_requests_bypass())
+    if args.list_paths and not args.publish and not bypass and not args.simulate:
+        json.dump({"paths": list_paths(), "production_control_configured": False}, sys.stdout, ensure_ascii=False, indent=2)
+        sys.stdout.write("\n")
+        return 0
     now, now_source, now_error = parse_now(args.now)
     approval, approval_error = (None, None)
     if not now_error:
@@ -76,7 +83,7 @@ def main(argv=None) -> int:
         approval_error=approval_error,
         simulate=args.simulate,
         publish=args.publish,
-        bypass=bool(args.bypass_approval or env_requests_bypass()),
+        bypass=bypass,
         seed=bool(args.seed_baseline),
         out_dir=Path(args.out),
         now_error=now_error,

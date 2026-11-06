@@ -32,6 +32,7 @@ SEMANTIC_IGNORE_KEYS = frozenset(
 )
 
 BEIJING_HOURS = frozenset({9, 12, 15, 18, 21})
+SLOT_TOLERANCE_MINUTES = 15
 LARGE_ID_DELTA = 3
 LARGE_FIELD_CHANGES = 8
 
@@ -76,10 +77,19 @@ def canonical_snapshot(obj: dict) -> dict:
 
 
 def is_beijing_slot(now: datetime) -> bool:
-    """True during Beijing hours 9, 12, 15, 18 and 21, the whole clock hour."""
+    """True within 15 minutes of Beijing 09:00, 12:00, 15:00, 18:00 or 21:00.
+
+    This classifies a scheduled read. It does not authorize publishing.
+    """
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("now_must_be_aware")
-    return now.astimezone(SHANGHAI).hour in BEIJING_HOURS
+    local = now.astimezone(SHANGHAI)
+    for hour in BEIJING_HOURS:
+        center = local.replace(hour=hour, minute=0, second=0, microsecond=0)
+        delta = abs(local - center)
+        if delta.total_seconds() <= SLOT_TOLERANCE_MINUTES * 60:
+            return True
+    return False
 
 
 def _identity_key(items):
@@ -290,7 +300,7 @@ def _result(status: str, **extra) -> dict:
     messages = {
         "no_semantic_change": "没有实质语义变化，不生成待发布候选。",
         "candidate_ready": "有实质变化，已写入待发布候选。未发布。",
-        "outside_slot": "定时调用不在北京时间 9/12/15/18/21 点，未生成待发布候选，也未模拟发布。",
+        "outside_slot": "定时调用不在北京时间 9/12/15/18/21 点前后 15 分钟内，未生成待发布候选，也未模拟发布。",
         "seeded": "已把当前基线文件记为成功基线。未发布。",
         "baseline_exists": "成功基线已存在，种子命令没有覆盖它。",
         "simulated": "模拟发布已隔离写入输出目录。没有生产发布。",

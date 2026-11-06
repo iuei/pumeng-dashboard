@@ -6,7 +6,7 @@
 
 「去决策」和「标记已处理」只写在当前浏览器。那不等于工作完成，也没有写回业务源。本仓库里没有回写入口。
 
-检查新快照用 `python3 scripts/check_update.py`。默认干跑，不能生产发布。说明在 `docs/UPDATE_ENTRY.md`。外部的北京时间调度不在这个仓库里。
+检查新快照用 `python3 scripts/check_update.py`。默认干跑。`--publish` 在这个入口里会拒绝。`python3 scripts/check_update.py --list-paths` 列出哪些拒绝是代码门、哪些生产控制还没有配置。仓库外的 `publish.sh` 不在这份清单的覆盖范围内。管理侧 routine 的冻结文字不是这里的锁。说明在 `docs/UPDATE_ENTRY.md`。
 
 ```bash
 bash scripts/run_tests.sh
