@@ -1,7 +1,7 @@
 {
   "title": "谱梦 · 进度监控",
-  "updated_at": "2026-11-06 00:20 Asia/Shanghai",
-  "source_updated_at": "2026-11-06 00:20 Asia/Shanghai",
+  "updated_at": "2026-11-06 08:07 Asia/Shanghai",
+  "source_updated_at": "2026-11-06 08:06 Asia/Shanghai",
   "refresh_seconds": 30,
   "today": {
     "doing": [
@@ -24,13 +24,22 @@
         "line_label": "谱梦"
       },
       {
-        "id": "v4-sample",
-        "owner": "haole",
-        "title": "v4 样片待审后交 liu",
+        "id": "voice-path-publish",
+        "owner": "liu",
+        "title": "抖音发布配音路径拍板",
         "line": "douyin",
-        "note": "定位：前沿 AI 工具 / 信息差 / 拥抱 AI / GitHub skills（拒工位 AI）",
-        "eta": "haole 审完",
-        "blocker": "配音克隆参考音授权不明 → 只能内审不能发",
+        "note": "v4/v5/DY-TPL-v2 均已内审可看；克隆参考音授权不明，公开发布需本人参考音/真人旁白/付费复刻之一",
+        "eta": "今日",
+        "blocker": "无商用旁白路径则只能内审",
+        "line_label": "抖音"
+      },
+      {
+        "id": "remotion-iter",
+        "owner": "视频制作",
+        "title": "Remotion 模板继续迭代",
+        "line": "douyin",
+        "note": "liu 01:03 已认方向；组长已过 DY-TPL-v2；继续降 AI 味/动画/文案",
+        "eta": "进行中",
         "line_label": "抖音"
       }
     ],
@@ -58,6 +67,30 @@
         "line": "pumeng",
         "note": "GitHub Pages；布局按优先级重排（拍板置顶）",
         "line_label": "谱梦"
+      },
+      {
+        "id": "v5-sample",
+        "owner": "视频制作",
+        "title": "v5 内审样片已交",
+        "line": "douyin",
+        "note": "Windows-MCP 假屏 28s；edge TTS；内审不可发",
+        "line_label": "抖音"
+      },
+      {
+        "id": "dy-tpl-v2",
+        "owner": "视频制作",
+        "title": "DY-TPL-v2 组长验收通过",
+        "line": "douyin",
+        "note": "demo_v2_1080x1920.mp4；内审不可发",
+        "line_label": "抖音"
+      },
+      {
+        "id": "v4-sample",
+        "owner": "视频制作",
+        "title": "v4 样片已落地",
+        "line": "douyin",
+        "note": "真实录屏+CosyVoice3；主观听感待 liu；仅内审",
+        "line_label": "抖音"
       }
     ],
     "todo": [
@@ -228,13 +261,21 @@
     "douyin": {
       "doing": [
         {
-          "id": "v4-sample",
-          "owner": "haole",
-          "title": "v4 样片待审后交 liu",
+          "id": "voice-path-publish",
+          "owner": "liu",
+          "title": "抖音发布配音路径拍板",
           "line": "douyin",
-          "note": "定位：前沿 AI 工具 / 信息差 / 拥抱 AI / GitHub skills（拒工位 AI）",
-          "eta": "haole 审完",
-          "blocker": "配音克隆参考音授权不明 → 只能内审不能发"
+          "note": "v4/v5/DY-TPL-v2 均已内审可看；克隆参考音授权不明，公开发布需本人参考音/真人旁白/付费复刻之一",
+          "eta": "今日",
+          "blocker": "无商用旁白路径则只能内审"
+        },
+        {
+          "id": "remotion-iter",
+          "owner": "视频制作",
+          "title": "Remotion 模板继续迭代",
+          "line": "douyin",
+          "note": "liu 01:03 已认方向；组长已过 DY-TPL-v2；继续降 AI 味/动画/文案",
+          "eta": "进行中"
         }
       ],
       "todo": [],
@@ -248,7 +289,29 @@
           "blocker": "商用授权未确认"
         }
       ],
-      "done_today": []
+      "done_today": [
+        {
+          "id": "v5-sample",
+          "owner": "视频制作",
+          "title": "v5 内审样片已交",
+          "line": "douyin",
+          "note": "Windows-MCP 假屏 28s；edge TTS；内审不可发"
+        },
+        {
+          "id": "dy-tpl-v2",
+          "owner": "视频制作",
+          "title": "DY-TPL-v2 组长验收通过",
+          "line": "douyin",
+          "note": "demo_v2_1080x1920.mp4；内审不可发"
+        },
+        {
+          "id": "v4-sample",
+          "owner": "视频制作",
+          "title": "v4 样片已落地",
+          "line": "douyin",
+          "note": "真实录屏+CosyVoice3；主观听感待 liu；仅内审"
+        }
+      ]
     }
   },
   "decisions": [
@@ -260,8 +323,8 @@
     },
     {
       "id": "voice-ref-commercial",
-      "title": "抖音配音参考音是否继续寻找可商用授权源",
-      "note": "当前参考音授权不明，样片仅可内审",
+      "title": "抖音旁白走哪条：本人录 10–20s 参考音 / 真人旁白 / 付费声音复刻",
+      "note": "v4/v5/DY-TPL-v2 已齐；缺可商用旁白则日更发不出",
       "owner": "liu"
     }
   ],
@@ -270,12 +333,16 @@
       "date": "2026-11-06",
       "did": [
         "进度监控台公网上线并按成品标准改版（双线 / 拍板 / 7 日时间线）",
-        "布局调研后重排：拍板置顶 → 卡点 → 双线折叠 → 时间线 → 聚合垫底"
+        "布局调研后重排：拍板置顶 → 卡点 → 双线折叠 → 时间线 → 聚合垫底",
+        "v4 样片落地（真实录屏+CosyVoice3，仅内审）",
+        "v5 Windows-MCP 内审样片已交",
+        "DY-TPL-v2 Remotion 样片组长验收通过（内审不可发）"
       ],
       "closed": [],
       "opened": [
         "影刀提交数据包准备",
-        "需 liu 拍板：TME/法务、配音参考音商用"
+        "需 liu 拍板：TME/法务、配音参考音商用",
+        "抖音发布配音路径拍板（阻塞日更）"
       ]
     },
     {
