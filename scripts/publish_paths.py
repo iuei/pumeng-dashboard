@@ -110,7 +110,15 @@ PATHS = (
         "code_gate": "absent",
         "production_control": "unknown",
         "routine_text_is_gate": False,
-        "reason": "publish.sh 不在本仓库。冻结回执写明没有改它。不能声称它已停止发布。",
+        "reason": "盒子上的 publish.sh 不在本仓库，本轮不能改它。不能声称它已停止发布。",
+    },
+    {
+        "id": "replacement_publish_entry",
+        "coverage": "in_repo",
+        "code_gate": "implemented",
+        "production_control": "absent",
+        "routine_text_is_gate": False,
+        "reason": "scripts/replacement/publish.sh 只走安全入口，不取 gh token、不 push、不走 Contents API。生产侧还没改到这个入口。",
     },
     {
         "id": "routine_text_freeze",

@@ -399,42 +399,29 @@
     star.textContent = "✦";
     star.setAttribute("aria-hidden", "true");
     h1.append(star, doc.createTextNode("谱梦 · 进度监控"));
-    const sub = el(doc, "p", "sub");
-    sub.textContent = "掌握进度，卡点提前知道。此页只读已发布快照。";
-    titleBlock.append(h1, sub);
+    const sub = el(doc, "p", "sub honesty");
+    sub.id = "local-warning";
+    sub.setAttribute("role", "status");
+    sub.textContent = "只读已发布快照。每 " + Math.round((options.refreshMs || REFRESH_MS) / 1000) + " 秒只重新读取已发布快照，不是业务源实时同步。" + WARNING + "。";
+    const stamp = el(doc, "p", "stamp");
+    stamp.textContent = "快照 updated_at " + (source.updated_at ? String(source.updated_at) : "未知") + " · 本机检查 " + check.time + " · " + (fresh.label || "");
+    titleBlock.append(h1, sub, stamp);
 
     const side = el(doc, "div", "hdr-side");
     const badgeRow = el(doc, "div", "badge-row");
     const badge = el(doc, "div", "badge");
-    badge.textContent = fresh.state === "unknown" ? "快照时间未知" : fresh.label;
+    badge.textContent = fresh.state === "unknown" ? "快照时间未知" : "只读快照";
     const date = el(doc, "div", "date");
     date.textContent = headerDate ? headerDate.date + " " + headerDate.weekday : "日期未知";
     badgeRow.append(badge, date);
-    const times = el(doc, "dl", "times");
-    function row(term, value) {
-      const dt = el(doc, "dt");
-      dt.textContent = term;
-      const dd = el(doc, "dd");
-      dd.textContent = value;
-      times.append(dt, dd);
-    }
-    row("本机检查时间", check.text + " · 不是业务变更时间");
-    row("updated_at", (source.updated_at ? String(source.updated_at) : "未知") + " · 字段原值");
-    row("source_updated_at", (source.source_updated_at ? String(source.source_updated_at) : "未知") + " · 含义未核验");
-    side.append(badgeRow, times);
+    side.append(badgeRow);
     header.append(titleBlock, side);
 
-    const sync = el(doc, "p", "sync-note");
-    sync.textContent = "每 " + Math.round((options.refreshMs || REFRESH_MS) / 1000) + " 秒只重新读取已发布快照，不是业务源实时同步。";
-    const localNote = el(doc, "p", "local-note" + (records.length ? " hot" : ""));
-    localNote.id = "local-warning";
-    localNote.setAttribute("role", "status");
-    localNote.textContent = WARNING;
     const help = el(doc, "details", "time-help");
     const helpSummary = el(doc, "summary");
-    helpSummary.textContent = "时间字段含义";
+    helpSummary.textContent = "时间字段与来源";
     const helpBody = el(doc, "p");
-    helpBody.textContent = "本机检查时间是这台浏览器读到快照的时刻，不是业务变更时间。updated_at 和 source_updated_at 是快照文件里的原字段，含义未核验：本仓库没有构建脚本，不能把它们证明成构建时间或业务变更时间。source_updated_at 旁边没有独立的业务变更时钟。";
+    helpBody.textContent = "本机检查时间 " + check.text + " 是这台浏览器读到快照的时刻，不是业务变更时间。updated_at 字段原值：" + (source.updated_at ? String(source.updated_at) : "未知") + "。source_updated_at：" + (source.source_updated_at ? String(source.source_updated_at) : "未知") + "，含义未核验。本仓库这份页面不能把这两个字段证明成构建时间或业务变更时间。红点表示当日 opened 非空，或条目含「卡点」「阻塞」，不是独立阻塞天数。";
     help.append(helpSummary, helpBody);
 
     const decisions = Array.isArray(source.decisions) ? source.decisions.filter((item) => item && typeof item === "object") : [];
@@ -450,7 +437,7 @@
     decisionMark.textContent = "●";
     decisionTitle.append(decisionMark, doc.createTextNode("需拍板事项"));
     const decisionSub = el(doc, "p");
-    decisionSub.textContent = "需要你做出决定。记录只留在本浏览器。";
+    decisionSub.textContent = "去决策只记在本浏览器。";
     decisionHead.append(decisionTitle, decisionSub);
     const decisionGrid = el(doc, "div", "decisions");
     if (!decisions.length) {
@@ -471,7 +458,7 @@
     todayMark.textContent = "▲";
     todayTitle.append(todayMark, doc.createTextNode("今日卡点"));
     const todaySub = el(doc, "p");
-    todaySub.textContent = "红色表示快照写了 blocker。没有天数字段或进度数字时不估算。";
+    todaySub.textContent = "红色是快照里的 blocker。天数和进度缺字段则标未知。";
     const legend = el(doc, "div", "legend");
     legend.append(legendItem(doc, "bad", "阻塞项 (" + blockedCount + ")"));
     legend.append(legendItem(doc, "run", "进行中 (" + activeCount + ")"));
@@ -499,7 +486,7 @@
     boundary.textContent = "正式回写入口：本仓库不存在，本次未调用。历史说明里的 publish.sh 与 Contents API 不在本仓库。" + WARNING + "。";
     foot.append(disclaimer, boundary);
 
-    wrap.append(header, sync, localNote, help, decisionSection, todaySection, timelineSection, metricSection, otherSection, localSection, foot);
+    wrap.append(header, help, decisionSection, todaySection, timelineSection, metricSection, otherSection, localSection, foot);
     root.append(skip, wrap);
     root.dataset.ready = "1";
   }
@@ -520,7 +507,7 @@
     const card = el(doc, "article", "card");
     const title = el(doc, "h3");
     title.textContent = item.title ? String(item.title) : "未命名决定";
-    card.append(title, renderNote(doc, item.note, true));
+    card.append(title, renderNote(doc, item.note, false));
     const meta = el(doc, "div", "meta");
     meta.append(pill(doc, "blue", item.owner ? "待 " + item.owner + " 拍板" : "待拍板"));
     if (item.due || item.suggest_by) meta.append(pill(doc, "muted", "建议最晚 " + String(item.due || item.suggest_by)));
@@ -564,7 +551,7 @@
     const card = el(doc, "article", "card " + (blocked ? "block" : "prog"));
     const title = el(doc, "h3");
     title.textContent = item.title ? String(item.title) : "未命名事项";
-    card.append(title, renderNote(doc, item.note, true));
+    card.append(title, renderNote(doc, item.note, false));
     const meta = el(doc, "div", "meta");
     if (blocked) {
       meta.append(pill(doc, "red", "阻塞"));
@@ -647,7 +634,7 @@
     const dates = days.map((day) => day && day.date).filter(Boolean).slice().sort();
     const sub = el(doc, "p");
     sub.textContent = dates.length
-      ? "快照内 " + dates[0] + " — " + dates[dates.length - 1] + "。红点 = 当日 opened 非空，或条目含「卡点」「阻塞」。不是独立阻塞天数。"
+      ? dates[0] + " — " + dates[dates.length - 1] + "。今日是摘要，红点规则在「时间字段与来源」。"
       : "快照没有时间线。";
     head.append(h2, sub);
     const panel = el(doc, "div", "panel");
@@ -706,10 +693,28 @@
     return box;
   }
 
+  function summarizeList(items) {
+    const list = Array.isArray(items) ? items.filter((item) => item != null && String(item).trim() !== "").map((item) => String(item)) : [];
+    if (!list.length) return { short: "无记录", full: "" };
+    const chars = Array.from(list[0]);
+    const clipped = chars.slice(0, 28).join("") + (chars.length > 28 ? "…" : "");
+    const short = list.length > 1 ? clipped + " 等 " + list.length + " 条" : clipped;
+    return { short, full: list.join("；") };
+  }
+
   function lineList(doc, label, items, bad) {
     const paragraph = el(doc, "p", bad ? "block-line" : "done-line");
-    const list = Array.isArray(items) ? items.filter((item) => item != null && String(item).trim() !== "") : [];
-    paragraph.textContent = label + "：" + (list.length ? list.map((item) => String(item)).join("；") : "无记录");
+    const summary = summarizeList(items);
+    paragraph.textContent = label + "：" + summary.short;
+    if (summary.full && summary.full !== summary.short) {
+      const more = el(doc, "details", "inline-more");
+      const sum = el(doc, "summary");
+      sum.textContent = "全文";
+      const body = el(doc, "p");
+      body.textContent = summary.full;
+      more.append(sum, body);
+      paragraph.append(more);
+    }
     return paragraph;
   }
 
@@ -789,12 +794,13 @@
   }
 
   function renderLocal(doc, records, ok, storage, rerender) {
-    const section = el(doc, "section", "sec");
+    const section = el(doc, "details", "fold-extra");
     section.id = "sec-local";
-    const h2 = el(doc, "h2");
-    h2.textContent = "本机记录";
+    if (records.length) section.open = true;
+    const h2 = el(doc, "summary");
+    h2.textContent = "本机记录（" + records.length + "）";
     const note = el(doc, "p");
-    note.textContent = ok ? "还没有本机记录时，上面的警告仍然有效。" : "本机记录无法读取，没有覆盖原来的存储。";
+    note.textContent = ok ? "这里只留在这台浏览器。页眉的警告在没有记录时仍然有效。" : "本机记录无法读取，没有覆盖原来的存储。";
     section.append(h2, note);
     if (!records.length) {
       const empty = el(doc, "p", "empty");

@@ -4,6 +4,12 @@ test_manual_and_scheduled_publish_flags_stay_refused_inside_the_slot (test_publi
 test_manual_bypass_and_allow_env_do_not_open_publish (test_publish_paths.PublishPathTests.test_manual_bypass_and_allow_env_do_not_open_publish) ... ok
 test_manual_simulate_still_needs_a_current_approval (test_publish_paths.PublishPathTests.test_manual_simulate_still_needs_a_current_approval) ... ok
 test_registry_does_not_treat_routine_text_as_a_gate (test_publish_paths.PublishPathTests.test_registry_does_not_treat_routine_text_as_a_gate) ... ok
+test_manual_and_scheduled_share_judgment_and_stale_approval_does_not_advance (test_replacement.ReplacementTests.test_manual_and_scheduled_share_judgment_and_stale_approval_does_not_advance) ... ok
+test_old_style_shell_does_not_call_git_or_gh (test_replacement.ReplacementTests.test_old_style_shell_does_not_call_git_or_gh) ... ok
+test_pipeline_rejects_secret_and_keeps_baseline (test_replacement.ReplacementTests.test_pipeline_rejects_secret_and_keeps_baseline) ... ok
+test_production_flags_are_refused_and_preview_does_not_publish (test_replacement.ReplacementTests.test_production_flags_are_refused_and_preview_does_not_publish) ... ok
+test_schema_hides_pm_ids_and_flattens_lines (test_replacement.ReplacementTests.test_schema_hides_pm_ids_and_flattens_lines) ... ok
+test_sensitive_material_fails_closed_without_echoing_the_value (test_replacement.ReplacementTests.test_sensitive_material_fails_closed_without_echoing_the_value) ... ok
 test_bypass_and_publish_are_refused_without_leaking_the_canary (test_update_gate.UpdateGateTests.test_bypass_and_publish_are_refused_without_leaking_the_canary) ... ok
 test_empty_object_is_a_real_diff_and_scripts_cannot_publish (test_update_gate.UpdateGateTests.test_empty_object_is_a_real_diff_and_scripts_cannot_publish) ... ok
 test_invalid_candidate_keeps_the_success_baseline_and_writes_retry (test_update_gate.UpdateGateTests.test_invalid_candidate_keeps_the_success_baseline_and_writes_retry) ... ok
@@ -20,6 +26,6 @@ test_three_identity_changes_are_large (test_update_gate.UpdateGateTests.test_thr
 test_timestamp_noise_is_not_a_change_and_blocker_is (test_update_gate.UpdateGateTests.test_timestamp_noise_is_not_a_change_and_blocker_is) ... ok
 
 ----------------------------------------------------------------------
-Ran 20 tests in 0.048s
+Ran 26 tests in 0.136s
 
 OK

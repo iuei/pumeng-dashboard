@@ -71,13 +71,14 @@ async function assertNoOverflow(page, width, height, label) {
     await page.goto(base + "/index.html", { waitUntil: "networkidle" });
     await page.waitForSelector("#app[data-ready='1']");
     const text = await page.locator("body").innerText();
+    const all = await page.evaluate(() => document.body.textContent);
     for (const needle of ["夜行地铁", "浮光", "56.8", "歌词最终版未确认"]) {
-      if (text.includes(needle)) throw new Error("example copy leaked: " + needle);
+      if (all.includes(needle)) throw new Error("example copy leaked: " + needle);
     }
     if (!text.includes(data.decisions[0].title)) throw new Error("real decision title missing");
     if (!text.includes(data.updated_at)) throw new Error("updated_at missing");
-    if (!text.includes("source_updated_at")) throw new Error("source field label missing");
-    if (!text.includes("含义未核验")) throw new Error("unverified label missing");
+    if (!all.includes("source_updated_at")) throw new Error("source field label missing");
+    if (!all.includes("含义未核验")) throw new Error("unverified label missing");
     if (!text.includes("只重新读取已发布快照")) throw new Error("refresh copy missing");
     if (!text.includes("仅本浏览器，未写回业务源，不等于工作完成")) throw new Error("local warning missing");
     if (!text.includes("天数未核验")) throw new Error("blocked days should be unverified");
@@ -104,6 +105,20 @@ async function assertNoOverflow(page, width, height, label) {
     if (columns.mobile.decisions.split(" ").length !== 1) throw new Error("mobile decisions not stacked: " + columns.mobile.decisions);
     if (columns.mobile.today.split(" ").length !== 1) throw new Error("mobile today not stacked: " + columns.mobile.today);
     await page.setViewportSize({ width: 1920, height: 1080 });
+    const fold = await page.evaluate(() => {
+      const box = document.querySelector("#sec-metrics").getBoundingClientRect();
+      return {
+        defaultState: true,
+        metricsBottom: box.bottom,
+        metricsTop: box.top,
+        viewport: window.innerHeight,
+        openDisclosures: document.querySelectorAll("details[open]").length,
+      };
+    });
+    if (fold.metricsBottom > fold.viewport + 1) {
+      throw new Error("default 1920x1080 hides metrics: " + JSON.stringify(fold));
+    }
+    if (fold.openDisclosures !== 0) throw new Error("default state opened a disclosure: " + JSON.stringify(fold));
     await page.screenshot({ path: path.join(outDir, "desktop-1920x1080.png") });
     await page.screenshot({ path: path.join(outDir, "desktop-full.png"), fullPage: true });
     for (const [width, height] of [[1920, 1080], [1280, 800], [768, 1024], [390, 844], [320, 700]]) {
@@ -177,7 +192,7 @@ async function assertNoOverflow(page, width, height, label) {
     await fixture("unknown", ["天数未核验", "进度未提供", "快照时间未知"]);
 
     if (errors.length) throw new Error(errors.join("\n"));
-    fs.writeFileSync(path.join(outDir, "browser-check.json"), JSON.stringify({ ok: true, base, columns }, null, 2));
+    fs.writeFileSync(path.join(outDir, "browser-check.json"), JSON.stringify({ ok: true, defaultState: true, base, columns, fold }, null, 2));
     console.log("BROWSER_OK");
   } finally {
     await browser.close();

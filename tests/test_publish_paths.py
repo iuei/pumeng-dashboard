@@ -185,7 +185,11 @@ class PublishPathTests(unittest.TestCase):
             code, body, _ = run(["--list-paths", "--publish", "--out", str(tmp / "out")])
         self.assertEqual(code, 5)
         self.assertEqual(body["status"], "production_publish_disabled")
-        self.assertEqual(list(ROOT.rglob("publish.sh")), [])
+        scripts = list(ROOT.rglob("publish.sh"))
+        self.assertEqual(scripts, [ROOT / "scripts" / "replacement" / "publish.sh"])
+        replacement = scripts[0].read_text(encoding="utf-8")
+        self.assertNotIn("gh auth token", replacement)
+        self.assertNotIn("git push", replacement)
 
     def case_dir(self):
         from test_update_gate import tempfile_cm

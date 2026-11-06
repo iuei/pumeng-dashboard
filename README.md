@@ -6,7 +6,9 @@
 
 「去决策」和「标记已处理」只写在当前浏览器。那不等于工作完成，也没有写回业务源。本仓库里没有回写入口。
 
-检查新快照用 `python3 scripts/check_update.py`。默认干跑。`--publish` 在这个入口里会拒绝。`python3 scripts/check_update.py --list-paths` 列出哪些拒绝是代码门、哪些生产控制还没有配置。仓库外的 `publish.sh` 不在这份清单的覆盖范围内。管理侧 routine 的冻结文字不是这里的锁。说明在 `docs/UPDATE_ENTRY.md`。
+检查新快照用 `python3 scripts/check_update.py`。默认干跑。`--publish` 在这个入口里会拒绝。`python3 scripts/check_update.py --list-paths` 列出哪些拒绝是代码门、哪些生产控制还没有配置。
+
+历史 `publish.sh` 的仓库内替换是 `scripts/replacement/publish.sh`。它不取令牌，也不推送。盒子上的旧脚本没有被这个替换改掉。说明在 `docs/REPLACEMENT.md`。
 
 ```bash
 bash scripts/run_tests.sh

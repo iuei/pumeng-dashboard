@@ -1,12 +1,13 @@
 {
   "ok": true,
-  "base": "http://127.0.0.1:41949",
+  "defaultState": true,
+  "base": "http://127.0.0.1:43069",
   "columns": {
     "desktop": {
       "width": 1920,
-      "decisions": "889px 889px",
-      "today": "437.5px 437.5px 437.5px 437.5px",
-      "metrics": "437.5px 437.5px 437.5px 437.5px"
+      "decisions": "891px 891px",
+      "today": "440.5px 440.5px 440.5px 440.5px",
+      "metrics": "440.5px 440.5px 440.5px 440.5px"
     },
     "mobile": {
       "width": 390,
@@ -14,5 +15,12 @@
       "today": "362px",
       "metrics": "362px"
     }
+  },
+  "fold": {
+    "defaultState": true,
+    "metricsBottom": 1040.578125,
+    "metricsTop": 891.78125,
+    "viewport": 1080,
+    "openDisclosures": 0
   }
 }
