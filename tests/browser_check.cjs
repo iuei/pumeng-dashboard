@@ -106,6 +106,7 @@ async function assertNoOverflow(page, width, height, label) {
     if (columns.mobile.today.split(" ").length !== 1) throw new Error("mobile today not stacked: " + columns.mobile.today);
     await page.setViewportSize({ width: 1920, height: 1080 });
     const fold = await page.evaluate(() => {
+      const px = (selector) => parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
       const box = document.querySelector("#sec-metrics").getBoundingClientRect();
       return {
         defaultState: true,
@@ -113,8 +114,25 @@ async function assertNoOverflow(page, width, height, label) {
         metricsTop: box.top,
         viewport: window.innerHeight,
         openDisclosures: document.querySelectorAll("details[open]").length,
+        fontPx: {
+          title: px("h1"),
+          section: px("#sec-decisions h2"),
+          card: px("#sec-decisions h3"),
+          body: px("#sec-decisions .note"),
+          button: px("#sec-decisions .btn"),
+          metric: px("#sec-metrics .num"),
+          pill: px("#sec-decisions .pill"),
+        },
       };
     });
+    const near = (actual, target) => Math.abs(actual - target) <= 1;
+    const fonts = fold.fontPx;
+    if (!(fonts.card >= 20 && fonts.body >= 20 && fonts.button >= 20)) {
+      throw new Error("1920 key text below 20px: " + JSON.stringify(fonts));
+    }
+    if (!near(fonts.title, 43) || !near(fonts.section, 27) || !near(fonts.card, 24) || !near(fonts.body, 20) || !near(fonts.button, 20) || !near(fonts.metric, 42) || fonts.pill < 16) {
+      throw new Error("1920 fonts miss the design lock: " + JSON.stringify(fonts));
+    }
     if (fold.metricsBottom > fold.viewport + 1) {
       throw new Error("default 1920x1080 hides metrics: " + JSON.stringify(fold));
     }
@@ -125,7 +143,16 @@ async function assertNoOverflow(page, width, height, label) {
       await assertNoOverflow(page, width, height, "home " + width);
     }
     await page.setViewportSize({ width: 390, height: 844 });
+    const mobileButton = await page.evaluate(() => {
+      const button = document.querySelector("[data-action='decision']");
+      const style = getComputedStyle(button);
+      return { height: button.getBoundingClientRect().height, font: parseFloat(style.fontSize) };
+    });
+    if (mobileButton.height < 44) throw new Error("390 button shorter than 44: " + JSON.stringify(mobileButton));
     await page.screenshot({ path: path.join(outDir, "mobile-390x844.png"), fullPage: true });
+    await page.setViewportSize({ width: 320, height: 700 });
+    await assertNoOverflow(page, 320, 700, "home 320 again");
+    await page.screenshot({ path: path.join(outDir, "mobile-320x700.png"), fullPage: true });
 
     await page.setViewportSize({ width: 1920, height: 1080 });
     for (let i = 0; i < 40; i += 1) {

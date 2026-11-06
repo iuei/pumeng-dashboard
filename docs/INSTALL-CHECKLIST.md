@@ -33,4 +33,18 @@ python3 scripts/replacement/safe_publish.py \
 
 回滚：在 `main` 上 revert 该提交，或把页面文件恢复到上线前的 SHA。revert 自己也会触发 Pages，所以同样要有一次明确的发布批准。本清单不执行回滚。
 
-旧 `publish.sh` 里的 `gh auth token` 和 Contents API 回退不能当作这条路径的旁路。那个脚本还在原来的机器上，本仓库没有改它，也没有收回它的权限。
+旧 `publish.sh` 里的 `gh auth token` 和 Contents API 回退不能当作这条路径的旁路。那个脚本如果还在原来的机器上，本仓库没有改它，也没有收回它的权限。
+
+## 缺口②：这次代码不能判过
+
+- 运行目录里的旧 `publish.sh` / `build_data.py` 没有在本轮停用，也没有被改写。仓库里的 `scripts/replacement/` 只是可安装的替换包，不等于已经装上。
+- 凭据没有收回。分支保护只看到规则集为空和经典接口 403，不能写成已经锁死。
+- 真实 `tasks.json` 不入库，历史账号正则不在本包里。获准后的那一次真实推送和 Pages 字节对照都还没有发生，本轮也不该发生。
+
+## 切换计划（仍不执行）
+
+1. 独立验收结束后，由 haole 点名可发布的代码 SHA。
+2. 操作者在仓库外写 `install.json`（`network_publisher` 先保持 false）和 `release.json`。`approved_code_sha` 必须等于那个 SHA，也必须等于运行时 `git rev-parse HEAD`。
+3. 用 `--detect` 看材料是否齐。齐了再把 `network_publisher` 设为 true，并只在那一次发布时设置 `PUMENG_ALLOW_GITHUB_PUBLISH=1`。没有这个环境变量时，指向 github.com 的远端会被拒绝。
+4. 发布器会先做候选字节提交，再推这个提交而不是检出的 `HEAD:main`。Pages 字节不一致或连接失败时，把远端 `main` 退回推送前的 SHA，并且不推进成功基线。
+5. 确认旧 `publish.sh` 不再被 routine 调用。这一步不在本仓库里完成。

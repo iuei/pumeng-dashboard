@@ -109,11 +109,15 @@ class ProductionAdapterTests(unittest.TestCase):
             mint_release(candidate_semantic_sha256="abc")
 
     def test_plan_push_has_no_token_and_rejects_credential_urls(self):
-        argv = plan_push("https://github.com/iuei/pumeng-dashboard.git", "main")
-        self.assertEqual(argv, ["git", "push", "https://github.com/iuei/pumeng-dashboard.git", "HEAD:main"])
-        self.assertNotIn("x-access-token", " ".join(argv))
+        commit = "a" * 40
+        argv = plan_push("file:///tmp/pumeng-adapter-plan.git", commit, "/tmp/pumeng-adapter-repo")
+        self.assertEqual(argv, ["git", "-C", "/tmp/pumeng-adapter-repo", "push", "file:///tmp/pumeng-adapter-plan.git", commit + ":refs/heads/main"])
+        self.assertNotIn("HEAD:main", argv[3])
+        self.assertNotIn("token", " ".join(argv).lower())
         with self.assertRaises(ValueError):
-            plan_push("https://x-access-token:secret@github.com/iuei/pumeng-dashboard.git", "main")
+            plan_push("https://x-access-token:secret@github.com/iuei/pumeng-dashboard.git", commit, "/tmp/pumeng-adapter-repo")
+        with self.assertRaises(ValueError):
+            plan_push("https://github.com/iuei/pumeng-dashboard.git", commit, "/tmp/pumeng-adapter-repo")
 
     def test_success_advances_only_after_pages_verify_and_retry_is_idempotent(self):
         with self.case_dir() as tmp:
@@ -286,6 +290,98 @@ class ProductionAdapterTests(unittest.TestCase):
             adapter.subprocess_runner = old_run
             adapter.network_fetch = old_fetch
             os.environ.pop("GH_TOKEN", None)
+
+    def test_file_bare_pushes_candidate_bytes_and_rolls_back_when_pages_mismatch(self):
+        import subprocess
+        with self.case_dir() as tmp:
+            work = tmp / "work"
+            bare = tmp / "bare.git"
+            work.mkdir()
+            env = os.environ.copy()
+            env.pop("GIT_DIR", None)
+            env.pop("GIT_WORK_TREE", None)
+            subprocess.run(["git", "init", "-b", "main", str(work)], check=True, capture_output=True, env=env)
+            (work / "data.json").write_bytes(b'{"tree":"checkout-head"}\n')
+            subprocess.run(["git", "-C", str(work), "add", "data.json"], check=True, capture_output=True, env=env)
+            subprocess.run(["git", "-C", str(work), "-c", "user.email=qa@example.invalid", "-c", "user.name=qa", "commit", "-m", "base"], check=True, capture_output=True, env=env)
+            head = subprocess.run(["git", "-C", str(work), "rev-parse", "HEAD"], check=True, capture_output=True, text=True, env=env).stdout.strip()
+            subprocess.run(["git", "init", "--bare", "-b", "main", str(bare)], check=True, capture_output=True, env=env)
+            subprocess.run(["git", "-C", str(work), "push", str(bare), "HEAD:refs/heads/main"], check=True, capture_output=True, env=env)
+            before = subprocess.run(["git", "--git-dir", str(bare), "rev-parse", "main"], check=True, capture_output=True, text=True, env=env).stdout.strip()
+            candidate = built_at(9, 0)
+            candidate["decisions"][0]["title"] = "候选正文"
+            raw = json.dumps(candidate, ensure_ascii=False).encode("utf-8")
+            remote = bare.resolve().as_uri()
+            self.assertTrue(remote.startswith("file:///tmp/") or remote.startswith("file:///"))
+            self.assertNotIn("github.com", remote)
+            publisher = GitPagesPublisher(fetch=lambda _url: b'{"not":"candidate"}')
+            result = run_controlled_publish(
+                baseline=built_at(8, 7),
+                candidate=candidate,
+                trigger="manual",
+                now=datetime(2026, 11, 6, 9, 0, tzinfo=CST),
+                install=install() | {"remote": remote, "work_tree": str(work)},
+                release=release_for(built_at(8, 7), candidate) | {"approved_code_sha": head},
+                running_sha=head,
+                out_dir=tmp / "out",
+                repo_dir=work,
+                publisher=publisher,
+                candidate_bytes=raw,
+            )
+            after = subprocess.run(["git", "--git-dir", str(bare), "rev-parse", "main"], check=True, capture_output=True, text=True, env=env).stdout.strip()
+            shown = subprocess.run(["git", "--git-dir", str(bare), "show", "main:data.json"], check=True, capture_output=True, env=env).stdout
+            self.assertEqual(result["status"], "pages_verify_failed")
+            self.assertFalse(result["baseline_advanced"])
+            self.assertTrue(result["rolled_back"])
+            self.assertEqual(after, before)
+            self.assertIn(b"checkout-head", shown)
+            self.assertNotIn("候选正文".encode(), shown)
+            mismatch = run_controlled_publish(
+                baseline=built_at(8, 7),
+                candidate=candidate,
+                trigger="manual",
+                now=datetime(2026, 11, 6, 9, 0, tzinfo=CST),
+                install=install() | {"remote": remote, "work_tree": str(work)},
+                release=release_for(built_at(8, 7), candidate) | {"approved_code_sha": "b" * 40},
+                running_sha="b" * 40,
+                out_dir=tmp / "out2",
+                repo_dir=work,
+                publisher=GitPagesPublisher(fetch=lambda _url: raw),
+                candidate_bytes=raw,
+            )
+            self.assertEqual(mismatch["status"], "push_failed")
+            self.assertEqual(subprocess.run(["git", "--git-dir", str(bare), "rev-parse", "main"], check=True, capture_output=True, text=True, env=env).stdout.strip(), before)
+
+    def test_dead_lock_is_reclaimed_and_live_lock_is_not(self):
+        with self.case_dir() as tmp:
+            baseline = built_at(8, 7)
+            candidate = built_at(9, 0)
+            candidate["decisions"][0]["title"] = "锁测试"
+            body = json.dumps(candidate).encode()
+            fake = FakePublisher(body)
+            lock = tmp / "state" / "publish.lock"
+            lock.parent.mkdir(parents=True)
+            lock.write_text(json.dumps({"pid": 2**22, "started": 1}), encoding="utf-8")
+            reclaimed = run_controlled_publish(
+                baseline=baseline, candidate=candidate, trigger="manual",
+                now=datetime(2026, 11, 6, 9, 0, tzinfo=CST), install=install(),
+                release=release_for(baseline, candidate), running_sha=RUNNING, out_dir=tmp,
+                publisher=fake, candidate_bytes=body,
+            )
+            self.assertEqual(reclaimed["status"], "published")
+            self.assertEqual(fake.pushes, 1)
+            lock.write_text(json.dumps({"pid": os.getpid(), "started": 1}), encoding="utf-8")
+            other = json.loads(json.dumps(candidate))
+            other["decisions"][0]["title"] = "另一份"
+            blocked = run_controlled_publish(
+                baseline=baseline, candidate=other, trigger="manual",
+                now=datetime(2026, 11, 6, 9, 0, tzinfo=CST), install=install(),
+                release=release_for(baseline, other), running_sha=RUNNING, out_dir=tmp, publisher=fake,
+                candidate_bytes=json.dumps(other).encode(),
+            )
+            self.assertEqual(blocked["status"], "concurrent_run")
+            self.assertIn("publish.lock", blocked["lock_path"])
+            self.assertEqual(fake.pushes, 1)
 
     def case_dir(self):
         from test_update_gate import tempfile_cm

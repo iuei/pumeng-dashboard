@@ -102,12 +102,15 @@ class RefusingPublisher:
         return {"ok": False, "git_push_ok": False, "pages_verified": False, "stage": "refused_not_installed"}
 
 
-def plan_push(remote: str, branch: str) -> list:
-    if branch != "main":
-        raise ValueError("branch_not_main")
-    if remote_has_credential(remote):
-        raise ValueError("credential_in_remote")
-    return ["git", "push", remote, "HEAD:main"]
+def plan_push(remote: str, commit_sha: str, repo_dir) -> list:
+    """Push one prepared commit from its own repository. Never pushes HEAD by name."""
+    if not isinstance(commit_sha, str) or len(commit_sha) < 7:
+        raise ValueError("missing_commit")
+    if commit_sha == "HEAD":
+        raise ValueError("refusing_head_shortcut")
+    if remote_has_credential(remote) or ("github.com" in remote.lower() and os.environ.get("PUMENG_ALLOW_GITHUB_PUBLISH") != "1"):
+        raise ValueError("remote_not_allowed")
+    return ["git", "-C", str(repo_dir), "push", remote, f"{commit_sha}:refs/heads/main"]
 
 
 class GitPagesPublisher:
@@ -123,25 +126,140 @@ class GitPagesPublisher:
         self.runner = runner or subprocess_runner
         self.fetch = fetch or network_fetch
 
-    def push_main(self, *, remote, branch, expected_semantic_sha):
-        argv = plan_push(remote, branch)
-        completed = self.runner(argv)
-        ok = completed.get("returncode") == 0
-        return {
-            "ok": ok,
-            "git_push_ok": ok,
-            "pages_verified": False,
-            "argv": argv,
-            "remote_commit": completed.get("remote_commit"),
-            "expected_semantic_sha": expected_semantic_sha,
-        }
+    def push_main(self, *, remote, branch, expected_semantic_sha, candidate_bytes=None, repo_dir=None, approved_code_sha=None):
+        try:
+            prepared = publish_prepared_commit(
+                remote=remote,
+                repo_dir=repo_dir or os.getcwd(),
+                candidate_bytes=candidate_bytes,
+                approved_code_sha=approved_code_sha,
+                runner=self.runner,
+            )
+        except ValueError as exc:
+            return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": exc.args[0] if exc.args else "ValueError"}
+        prepared["expected_semantic_sha"] = expected_semantic_sha
+        prepared["branch"] = branch
+        self._before = prepared.get("remote_sha_before")
+        self._remote = remote
+        self._repo_dir = repo_dir or os.getcwd()
+        return prepared
 
     def verify_pages(self, *, pages_data_url, expected_sha256):
-        body = self.fetch(pages_data_url)
+        try:
+            body = self.fetch(pages_data_url)
+        except Exception:
+            return {"ok": False, "git_push_ok": True, "pages_verified": False, "error_type": "pages_fetch_failed"}
         import hashlib
         observed = hashlib.sha256(body).hexdigest() if isinstance(body, (bytes, bytearray)) else None
         ok = observed == expected_sha256
-        return {"ok": ok, "git_push_ok": True, "pages_verified": ok, "observed_sha256": observed}
+        return {"ok": ok, "git_push_ok": True, "pages_verified": ok, "error_type": None if ok else "pages_hash_mismatch"}
+
+    def rollback(self):
+        before = getattr(self, "_before", None)
+        remote = getattr(self, "_remote", None)
+        if not before or not remote:
+            return False
+        argv = ["git", "-C", str(self._repo_dir), "push", remote, f"+{before}:refs/heads/main"]
+        if "github.com" in remote.lower() and os.environ.get("PUMENG_ALLOW_GITHUB_PUBLISH") != "1":
+            return False
+        completed = self.runner(argv)
+        return completed.get("returncode") == 0
+
+
+def git_env():
+    env = os.environ.copy()
+    env.pop("GIT_DIR", None)
+    env.pop("GIT_WORK_TREE", None)
+    return env
+
+
+def git_text(repo: Path, *args, input_bytes=None) -> tuple:
+    import subprocess
+    proc = subprocess.run(["git", "-C", str(repo), *args], input=input_bytes, capture_output=True, env=git_env())
+    return proc.returncode, proc.stdout, proc.stderr
+
+
+def remote_main_sha(remote: str) -> str | None:
+    import subprocess
+    if "github.com" in remote.lower() and os.environ.get("PUMENG_ALLOW_GITHUB_PUBLISH") != "1":
+        raise ValueError("remote_not_allowed")
+    proc = subprocess.run(["git", "ls-remote", remote, "refs/heads/main"], capture_output=True, env=git_env())
+    if proc.returncode != 0 or not proc.stdout.strip():
+        return None
+    return proc.stdout.split()[0].decode("utf-8")
+
+
+def publish_prepared_commit(*, remote, repo_dir, candidate_bytes, approved_code_sha, runner) -> dict:
+    if not isinstance(candidate_bytes, (bytes, bytearray)):
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "candidate_bytes_missing"}
+    code, head_out, _err = git_text(repo_dir, "rev-parse", "HEAD")
+    if code != 0:
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "head_unreadable"}
+    head = head_out.decode("utf-8").strip()
+    if head != approved_code_sha:
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "head_mismatch", "head": head}
+    before = remote_main_sha(remote)
+    code, blob_out, _err = git_text(repo_dir, "hash-object", "-w", "--stdin", input_bytes=bytes(candidate_bytes))
+    if code != 0:
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "blob_failed", "remote_sha_before": before}
+    blob = blob_out.decode("utf-8").strip()
+    code, tree_out, _err = git_text(repo_dir, "rev-parse", f"{head}^{{tree}}")
+    if code != 0:
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "tree_unreadable", "remote_sha_before": before}
+    parent_tree = tree_out.decode("utf-8").strip()
+    listing = git_text(repo_dir, "ls-tree", parent_tree)[1]
+    lines = []
+    replaced = False
+    for raw in listing.decode("utf-8").splitlines():
+        if not raw.strip():
+            continue
+        meta, path = raw.split("\t", 1)
+        mode, kind, sha = meta.split()
+        if path == "data.json":
+            lines.append(f"100644 blob {blob}\tdata.json")
+            replaced = True
+        else:
+            lines.append(f"{mode} {kind} {sha}\t{path}")
+    if not replaced:
+        lines.append(f"100644 blob {blob}\tdata.json")
+    code, new_tree_out, _err = git_text(repo_dir, "mktree", input_bytes="\n".join(lines).encode() + b"\n")
+    if code != 0:
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "tree_failed", "remote_sha_before": before}
+    new_tree = new_tree_out.decode("utf-8").strip()
+    code, commit_out, _err = git_text(
+        repo_dir,
+        "-c", "user.email=publish@example.invalid",
+        "-c", "user.name=pumeng-adapter",
+        "commit-tree", new_tree, "-p", head, "-m", "publish candidate data.json",
+    )
+    if code != 0:
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "commit_failed", "remote_sha_before": before}
+    commit = commit_out.decode("utf-8").strip()
+    code, shown, _err = git_text(repo_dir, "cat-file", "-p", f"{commit}:data.json")
+    if code != 0 or shown != bytes(candidate_bytes):
+        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "candidate_bytes_mismatch", "remote_sha_before": before}
+    argv = plan_push(remote, commit, repo_dir)
+    completed = runner(argv)
+    after = remote_main_sha(remote)
+    if completed.get("returncode") != 0 or after != commit:
+        return {
+            "ok": False,
+            "git_push_ok": False,
+            "pages_verified": False,
+            "error_type": "push_failed",
+            "remote_sha_before": before,
+            "remote_sha_after": after,
+            "prepared_commit": commit,
+        }
+    return {
+        "ok": True,
+        "git_push_ok": True,
+        "pages_verified": False,
+        "remote_commit": commit,
+        "remote_sha_before": before,
+        "remote_sha_after": after,
+        "prepared_commit": commit,
+    }
 
 
 def advance_baseline(path: Path, payload: dict, replace=os.replace) -> None:
@@ -182,6 +300,7 @@ def run_controlled_publish(
     release,
     running_sha: str,
     out_dir: Path,
+    repo_dir=None,
     publisher=None,
     detect_only: bool = False,
     before_advance=None,
@@ -230,13 +349,10 @@ def run_controlled_publish(
     if detect_only:
         return _result("detect_ready", 0, would_publish=True, publisher_called=False, **common)
     lock = out_dir / "state" / "publish.lock"
-    lock.parent.mkdir(parents=True, exist_ok=True)
+    acquired, blocked = acquire_publish_lock(lock)
+    if blocked:
+        return _result(blocked["status"], 3, retryable=True, lock_path=blocked.get("lock_path"), holder_pid=blocked.get("holder_pid"), **common)
     try:
-        fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
-    except FileExistsError:
-        return _result("concurrent_run", 3, retryable=True, **common)
-    try:
-        os.close(fd)
         pub = publisher if publisher is not None else RefusingPublisher()
         if isinstance(pub, RefusingPublisher):
             return _result("publisher_not_enabled", 5, **common)
@@ -246,6 +362,9 @@ def run_controlled_publish(
             remote=install["remote"],
             branch="main",
             expected_semantic_sha=semantic,
+            candidate_bytes=candidate_bytes,
+            repo_dir=str(repo_dir) if repo_dir else None,
+            approved_code_sha=release.get("approved_code_sha"),
         )
         if not pushed.get("git_push_ok"):
             return _result(
@@ -263,15 +382,23 @@ def run_controlled_publish(
         expected_body_sha = hashlib.sha256(raw).hexdigest()
         verified = pub.verify_pages(pages_data_url=install["pages_data_url"], expected_sha256=expected_body_sha)
         if not verified.get("pages_verified"):
+            rolled = False
+            if hasattr(pub, "rollback"):
+                try:
+                    rolled = bool(pub.rollback())
+                except Exception:
+                    rolled = False
             return _result(
                 "pages_verify_failed",
                 3,
                 retryable=True,
-                git_push_ok=True,
+                git_push_ok=False if rolled else True,
                 pages_verified=False,
+                rolled_back=rolled,
                 called_network=network,
                 publisher_invoked=invoked,
-                remote_commit=pushed.get("remote_commit"),
+                error_type=verified.get("error_type") or "pages_hash_mismatch",
+                remote_sha_before=pushed.get("remote_sha_before"),
                 **common,
             )
         state_path = out_dir / "state" / "baseline.json"
@@ -316,9 +443,57 @@ def run_controlled_publish(
         lock.unlink(missing_ok=True)
 
 
+def pid_alive(pid: int) -> bool:
+    if not isinstance(pid, int) or pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    else:
+        return True
+
+
+def acquire_publish_lock(path: Path, ttl_seconds: int = 900):
+    """Return (path, None) or (None, error). A live holder is never stolen."""
+    import time
+    path.parent.mkdir(parents=True, exist_ok=True)
+    now = time.time()
+    if path.exists():
+        try:
+            info = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            info = {}
+        pid = info.get("pid") if isinstance(info, dict) else None
+        started = info.get("started") if isinstance(info, dict) else None
+        try:
+            started = float(started) if started is not None else path.stat().st_mtime
+            pid = int(pid) if pid is not None else 0
+        except (TypeError, ValueError):
+            started = path.stat().st_mtime
+            pid = 0
+        alive = pid_alive(pid) if pid else False
+        age = now - started
+        if alive:
+            return None, {"status": "concurrent_run", "lock_path": str(path), "holder_pid": pid}
+        if pid or age >= ttl_seconds:
+            path.unlink(missing_ok=True)
+        else:
+            return None, {"status": "concurrent_run", "lock_path": str(path), "holder_pid": None}
+    try:
+        fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+    except FileExistsError:
+        return None, {"status": "concurrent_run", "lock_path": str(path)}
+    os.write(fd, json.dumps({"pid": os.getpid(), "started": now}).encode("utf-8"))
+    os.close(fd)
+    return path, None
+
+
 def subprocess_runner(argv):
     import subprocess
-    completed = subprocess.run(argv, check=False, capture_output=True)
+    completed = subprocess.run(argv, check=False, capture_output=True, env=git_env())
     return {"returncode": completed.returncode, "remote_commit": None}
 
 

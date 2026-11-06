@@ -141,21 +141,38 @@ def main(argv=None) -> int:
             print(json.dumps(body, ensure_ascii=False, indent=2, sort_keys=True))
             return 3
         install, _install_error, release, _release_error = load_materials(args.install, args.release)
-        result = run_controlled_publish(
-            baseline=baseline,
-            candidate=built,
-            trigger=args.trigger,
-            now=now,
-            install=install,
-            release=release,
-            running_sha=args.running_sha or "",
-            out_dir=out,
-            publisher=select_publisher(install),
-            detect_only=bool(args.detect),
-            candidate_bytes=candidate.read_bytes(),
-        )
+        try:
+            result = run_controlled_publish(
+                baseline=baseline,
+                candidate=built,
+                trigger=args.trigger,
+                now=now,
+                install=install,
+                release=release,
+                running_sha=args.running_sha or "",
+                out_dir=out,
+                repo_dir=Path(install["work_tree"]) if isinstance(install, dict) and install.get("work_tree") else None,
+                publisher=select_publisher(install),
+                detect_only=bool(args.detect),
+                candidate_bytes=candidate.read_bytes(),
+            )
+        except Exception:
+            result = _failure(
+                out,
+                "publisher_error",
+                3,
+                retryable=True,
+                error_type="publisher_error",
+                git_push_ok=False,
+                pages_verified=False,
+            )
+            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+            return 3
         result["historical_detectors_available"] = scan["historical_detectors_available"]
         result["read_gh_token"] = False
+        _write(out / "status.json", {k: v for k, v in result.items() if k not in {"argv", "stderr", "stdout", "body"}})
+        if int(result.get("exit_code", 1)) != 0:
+            _write(out / "retry" / "last_failure.json", {k: v for k, v in result.items() if k not in {"argv", "stderr", "stdout", "body"}})
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return int(result["exit_code"])
     approval, approval_error = load_approval(args.approval)
