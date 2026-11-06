@@ -167,25 +167,26 @@ class GitPagesPublisher:
         if "github.com" in remote.lower() and os.environ.get("PUMENG_ALLOW_GITHUB_PUBLISH") != "1":
             return False
         ours = getattr(self, "_pushed_commit", None)
-        if ours and remote_main_sha(remote) != ours:
-            return False
         before = getattr(self, "_before", None)
+        if not ours:
+            return False
         if before:
-            forced = self.runner(["git", "-C", str(repo), "push", remote, f"+{before}:refs/heads/main"])
-            if forced.get("returncode") == 0 and remote_main_sha(remote) == before:
+            updated = _cas_push(repo, remote, self.runner, ours, before)
+            if updated.get("returncode") == 0 and remote_main_sha(remote) == before:
                 return True
-        if not _delete_main_ref(remote, repo, self.runner):
+            if not _delete_main_if_tip(remote, repo, self.runner, ours):
+                return False
+            restored = _cas_push(repo, remote, self.runner, "", before)
+            if restored.get("returncode") != 0 or remote_main_sha(remote) != before:
+                return False
+            bare = _file_remote_dir(remote)
+            if bare is not None:
+                import subprocess
+                subprocess.run(["git", "--git-dir", str(bare), "symbolic-ref", "HEAD", "refs/heads/main"], capture_output=True, env=git_env())
+            return remote_main_sha(remote) == before
+        if not _delete_main_if_tip(remote, repo, self.runner, ours):
             return False
-        if before is None:
-            return remote_main_sha(remote) is None
-        restored = self.runner(["git", "-C", str(repo), "push", remote, f"{before}:refs/heads/main"])
-        if restored.get("returncode") != 0 or remote_main_sha(remote) != before:
-            return False
-        bare = _file_remote_dir(remote)
-        if bare is not None:
-            import subprocess
-            subprocess.run(["git", "--git-dir", str(bare), "symbolic-ref", "HEAD", "refs/heads/main"], capture_output=True, env=git_env())
-        return remote_main_sha(remote) == before
+        return remote_main_sha(remote) is None
 
 
 def git_env():
@@ -209,18 +210,41 @@ def _file_remote_dir(remote: str):
     return path if path.exists() else None
 
 
-def _delete_main_ref(remote: str, repo, runner) -> bool:
-    """Remove refs/heads/main. A bare repo refuses to delete its current branch until HEAD moves."""
-    deleted = runner(["git", "-C", str(repo), "push", remote, ":refs/heads/main"])
+def _runner_stderr(result) -> str:
+    if not isinstance(result, dict):
+        return ""
+    err = result.get("stderr") or ""
+    if isinstance(err, bytes):
+        return err.decode("utf-8", "replace")
+    return str(err)
+
+
+def _cas_push(repo, remote: str, runner, expected: str, target: str | None) -> dict:
+    """Ask the remote to set main to target, or delete it, only while it is exactly expected.
+
+    An empty expected value means the ref must be absent. The expectation travels in the
+    push command; a separate ls-remote beforehand is not the check.
+    """
+    lease = f"--force-with-lease=refs/heads/main:{expected}"
+    refspec = ":refs/heads/main" if target is None else f"{target}:refs/heads/main"
+    completed = runner(["git", "-C", str(repo), "push", lease, remote, refspec])
+    return completed if isinstance(completed, dict) else {"returncode": 1, "stderr": ""}
+
+
+def _delete_main_if_tip(remote: str, repo, runner, expected: str) -> bool:
+    """Delete refs/heads/main only while it still names expected. Never deletes any other tip."""
+    deleted = _cas_push(repo, remote, runner, expected, None)
     if deleted.get("returncode") == 0:
-        return True
+        return remote_main_sha(remote) is None
+    if "deletion of the current branch" not in _runner_stderr(deleted):
+        return False
     bare = _file_remote_dir(remote)
     if bare is None:
         return False
     import subprocess
     subprocess.run(["git", "--git-dir", str(bare), "symbolic-ref", "HEAD", "refs/heads/pumeng-empty"], capture_output=True, env=git_env())
-    deleted = runner(["git", "-C", str(repo), "push", remote, ":refs/heads/main"])
-    return deleted.get("returncode") == 0
+    deleted = _cas_push(repo, remote, runner, expected, None)
+    return deleted.get("returncode") == 0 and remote_main_sha(remote) is None
 
 
 def remote_main_sha(remote: str) -> str | None:
@@ -714,7 +738,12 @@ def acquire_publish_lock(path: Path, ttl_seconds: int = 900):
 def subprocess_runner(argv):
     import subprocess
     completed = subprocess.run(argv, check=False, capture_output=True, env=git_env())
-    return {"returncode": completed.returncode, "remote_commit": None}
+    return {
+        "returncode": completed.returncode,
+        "remote_commit": None,
+        "stderr": completed.stderr.decode("utf-8", "replace"),
+        "stdout": completed.stdout.decode("utf-8", "replace"),
+    }
 
 
 def network_fetch(url):

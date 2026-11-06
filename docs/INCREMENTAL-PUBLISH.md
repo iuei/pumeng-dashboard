@@ -1,6 +1,8 @@
 # 连续小增量发布
 
-获批代码身份写在 `release.json` 的 `approved_code_sha`。`named_code_sha` 可以同时记下被点名的那一次代码。页面仓库的 HEAD 可以是这份代码，也可以是它的只改 `data.json` 的后裔。其它文件一旦不同，绑定和发布都拒绝。
+这份包的代码锚是打包时写进 `MANIFEST.json` 的 `source_commit`，也就是 `code_anchor`。安装时 `release.json` 的 `approved_code_sha` 和 `named_code_sha` 都写这个锚。程序不会自己把某个 SHA 写成已批准。更早的 `c4b48e8d07dc4fc8d2ce91929713bca67ad1e045` 只是上一轮界面提交，不是这份包的锚，也不能抄进新的 release。
+
+页面仓库的 HEAD 可以是这个锚，也可以是它的只改 `data.json` 的后裔。其它文件一旦不同，绑定和发布都拒绝。
 
 每次发布使用新的 `candidate_semantic_sha256` 和 `summary_sha256`。`network_publisher=false` 与 `stale_release` 仍是关门。大改仍要 `large_change_confirmed=true`，程序不会自动填上。
 
@@ -51,4 +53,6 @@ PUMENG_CONFIRM_PUBLISH=1 PUMENG_PUBLISH_NOW='2026-11-06T15:00:00+08:00' \
 
 ## 回滚
 
-页面字节已经核对成功的提交用新的前进提交收回：把候选改回上一份快照，重新干跑、重绑哈希、再发布一次。不要对 `main` 使用强推或删除重建。Pages 核对失败且远端 tip 仍是刚刚推上的那一个提交时，发布器会把该 tip 退回推送前的提交；若 tip 已经是别人的更新，则留下它并报告回滚失败。
+页面字节已经核对成功的提交用新的前进提交收回：把候选改回上一份快照，重新干跑、重绑哈希、再发布一次。
+
+Pages 核对失败时，发布器只在远端 `main` 仍精确等于刚刚推上的那一个提交时收回它。收回命令把这个预期 tip 写进 `git push --force-with-lease=refs/heads/main:<预期>`，由接收端在同一条更新里核对。预期为空表示引用必须还不存在，用来重建被删掉的 `main`。删除同样带着预期 tip。核对不上就停止，不再发送不带预期的强制更新。别人已经快进上去的 tip 会留下来，结果是 `rolled_back=false`，成功基线不写，本机 HEAD 不前进。安装文件里的 `network_publisher` 由 `publish-once.sh` 在结束时改回 false。
