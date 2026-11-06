@@ -65,7 +65,9 @@ def validate_install(install: dict):
     remote = install.get("remote")
     if not isinstance(remote, str) or remote_has_credential(remote):
         return "credential_in_remote"
-    if not isinstance(install.get("pages_data_url"), str) or not install["pages_data_url"].startswith("https://"):
+    pages = install.get("pages_data_url")
+    file_pair = isinstance(remote, str) and remote.startswith("file://") and isinstance(pages, str) and pages.startswith("file://")
+    if not file_pair and (not isinstance(pages, str) or not pages.startswith("https://")):
         return "missing_pages_url"
     if install.get("network_publisher") is True:
         return "ok"
@@ -126,13 +128,14 @@ class GitPagesPublisher:
         self.runner = runner or subprocess_runner
         self.fetch = fetch or network_fetch
 
-    def push_main(self, *, remote, branch, expected_semantic_sha, candidate_bytes=None, repo_dir=None, approved_code_sha=None):
+    def push_main(self, *, remote, branch, expected_semantic_sha, candidate_bytes=None, repo_dir=None, approved_code_sha=None, named_code_sha=None):
         try:
             prepared = publish_prepared_commit(
                 remote=remote,
                 repo_dir=repo_dir or os.getcwd(),
                 candidate_bytes=candidate_bytes,
                 approved_code_sha=approved_code_sha,
+                named_code_sha=named_code_sha,
                 runner=self.runner,
             )
         except ValueError as exc:
@@ -141,6 +144,7 @@ class GitPagesPublisher:
         prepared["branch"] = branch
         self._before = prepared.get("remote_sha_before")
         self._pushed = bool(prepared.get("git_push_ok"))
+        self._pushed_commit = prepared.get("remote_commit") if prepared.get("git_push_ok") else None
         self._remote = remote
         self._repo_dir = repo_dir or os.getcwd()
         return prepared
@@ -161,6 +165,9 @@ class GitPagesPublisher:
         if not getattr(self, "_pushed", False) or not remote or not repo:
             return False
         if "github.com" in remote.lower() and os.environ.get("PUMENG_ALLOW_GITHUB_PUBLISH") != "1":
+            return False
+        ours = getattr(self, "_pushed_commit", None)
+        if ours and remote_main_sha(remote) != ours:
             return False
         before = getattr(self, "_before", None)
         if before:
@@ -226,16 +233,158 @@ def remote_main_sha(remote: str) -> str | None:
     return proc.stdout.split()[0].decode("utf-8")
 
 
-def publish_prepared_commit(*, remote, repo_dir, candidate_bytes, approved_code_sha, runner) -> dict:
+def _porcelain(repo) -> str:
+    _code, out, _err = git_text(repo, "status", "--porcelain")
+    return out.decode("utf-8")
+
+
+def _anchors(approved_code_sha, named_code_sha) -> list:
+    anchors = []
+    for value in (approved_code_sha, named_code_sha):
+        if isinstance(value, str) and value.strip() and value not in anchors:
+            anchors.append(value)
+    return anchors
+
+
+def is_data_only_descendant(repo, anchor: str, commit: str) -> bool:
+    """True when commit is anchor, or a descendant whose tree differs only by data.json."""
+    if not isinstance(anchor, str) or not isinstance(commit, str) or len(anchor) < 7 or len(commit) < 7:
+        return False
+    if commit == anchor:
+        return True
+    code, _out, _err = git_text(repo, "merge-base", "--is-ancestor", anchor, commit)
+    if code != 0:
+        return False
+    code, out, _err = git_text(repo, "diff-tree", "-r", "--name-only", anchor, commit)
+    if code != 0:
+        return False
+    names = {line.strip() for line in out.decode("utf-8").splitlines() if line.strip()}
+    return names <= {"data.json"}
+
+
+def _descendant_of_all(repo, anchors: list, commit: str) -> bool:
+    return bool(anchors) and all(is_data_only_descendant(repo, anchor, commit) for anchor in anchors)
+
+
+def _ensure_commit_present(repo, remote: str, sha: str) -> bool:
+    code, _out, _err = git_text(repo, "cat-file", "-e", f"{sha}^{{commit}}")
+    if code == 0:
+        return True
+    git_text(repo, "fetch", "--no-tags", remote, "refs/heads/main")
+    code, _out, _err = git_text(repo, "cat-file", "-e", f"{sha}^{{commit}}")
+    return code == 0
+
+
+def _fast_forward_to(repo, commit: str):
+    """Move a clean work tree forward. Returns an error_type, or None."""
+    code, head_out, _err = git_text(repo, "rev-parse", "HEAD")
+    if code != 0:
+        return "head_unreadable"
+    if head_out.decode("utf-8").strip() == commit:
+        return None
+    if _porcelain(repo).strip():
+        return "dirty_work_tree"
+    code, _out, _err = git_text(repo, "merge", "--ff-only", "--quiet", commit)
+    if code != 0:
+        return "local_not_ff"
+    code, head_out, _err = git_text(repo, "rev-parse", "HEAD")
+    if code != 0 or head_out.decode("utf-8").strip() != commit:
+        return "local_not_ff"
+    return None
+
+
+def inherit_published_tip(repo, commit: str) -> bool:
+    """Fast-forward the local work tree onto a commit that Pages already accepted."""
+    code, shown, _err = git_text(repo, "show", f"{commit}:data.json")
+    if code != 0:
+        return False
+    if _fast_forward_to(repo, commit) is not None:
+        return False
+    path = Path(repo) / "data.json"
+    return path.is_file() and path.read_bytes() == shown
+
+
+def evaluate_bind(repo_dir, approved_code_sha, named_code_sha=None) -> dict:
+    repo = Path(repo_dir)
+    if not (repo / ".git").exists():
+        return {"bind_status": "missing_work_tree", "exit_code": 4}
+    code, head_out, _err = git_text(repo, "rev-parse", "HEAD")
+    if code != 0:
+        return {"bind_status": "head_unreadable", "exit_code": 4}
+    head = head_out.decode("utf-8").strip()
+    _code, tree_out, _err = git_text(repo, "rev-parse", "HEAD^{tree}")
+    tree = tree_out.decode("utf-8").strip()
+    data_path = repo / "data.json"
+    data_sha = ""
+    if data_path.is_file():
+        import hashlib
+        data_sha = hashlib.sha256(data_path.read_bytes()).hexdigest()
+    body = {
+        "approved_code_sha": approved_code_sha,
+        "data_sha256": data_sha,
+        "head": head,
+        "named_code_sha": named_code_sha or "",
+        "tree": tree,
+    }
+    if _porcelain(repo).strip():
+        return {"bind_status": "dirty_work_tree", "exit_code": 5, **body}
+    anchors = _anchors(approved_code_sha, named_code_sha)
+    if not _descendant_of_all(repo, anchors, head):
+        return {"bind_status": "code_not_approved", "exit_code": 6, **body}
+    code, shown, _err = git_text(repo, "show", "HEAD:data.json")
+    if code != 0 or not data_path.is_file() or data_path.read_bytes() != shown:
+        return {"bind_status": "data_mismatch", "exit_code": 8, **body}
+    return {"bind_status": "ready", "exit_code": 0, **body}
+
+
+def _refuse(error_type: str, before=None, **extra) -> dict:
+    body = {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": error_type, "remote_sha_before": before}
+    body.update(extra)
+    return body
+
+
+def publish_prepared_commit(*, remote, repo_dir, candidate_bytes, approved_code_sha, runner, named_code_sha=None) -> dict:
     if not isinstance(candidate_bytes, (bytes, bytearray)):
-        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "candidate_bytes_missing"}
+        return _refuse("candidate_bytes_missing")
     code, head_out, _err = git_text(repo_dir, "rev-parse", "HEAD")
     if code != 0:
-        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "head_unreadable"}
+        return _refuse("head_unreadable")
     head = head_out.decode("utf-8").strip()
-    if head != approved_code_sha:
-        return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "head_mismatch", "head": head}
+    anchors = _anchors(approved_code_sha, named_code_sha)
+    if not _descendant_of_all(repo_dir, anchors, head):
+        return _refuse("head_mismatch", head=head)
     before = remote_main_sha(remote)
+    if before:
+        if not _ensure_commit_present(repo_dir, remote, before):
+            return _refuse("remote_commit_missing", before)
+        if not _descendant_of_all(repo_dir, anchors, before):
+            return _refuse("unapproved_remote", before, remote_sha_after=before)
+        code, shown, _err = git_text(repo_dir, "cat-file", "-p", f"{before}:data.json")
+        if code == 0 and shown == bytes(candidate_bytes):
+            moved = _fast_forward_to(repo_dir, before)
+            if moved is not None:
+                return _refuse(moved, before)
+            return {
+                "ok": True,
+                "git_push_ok": True,
+                "pages_verified": False,
+                "remote_commit": before,
+                "remote_sha_before": before,
+                "remote_sha_after": before,
+                "prepared_commit": before,
+                "already_published": True,
+            }
+        if _porcelain(repo_dir).strip():
+            return _refuse("dirty_work_tree", before)
+        moved = _fast_forward_to(repo_dir, before)
+        if moved is not None:
+            return _refuse(moved, before)
+        code, head_out, _err = git_text(repo_dir, "rev-parse", "HEAD")
+        if code != 0:
+            return _refuse("head_unreadable", before)
+        head = head_out.decode("utf-8").strip()
+    elif _porcelain(repo_dir).strip():
+        return _refuse("dirty_work_tree", before)
     code, blob_out, _err = git_text(repo_dir, "hash-object", "-w", "--stdin", input_bytes=bytes(candidate_bytes))
     if code != 0:
         return {"ok": False, "git_push_ok": False, "pages_verified": False, "error_type": "blob_failed", "remote_sha_before": before}
@@ -402,6 +551,7 @@ def run_controlled_publish(
             candidate_bytes=candidate_bytes,
             repo_dir=str(repo_dir) if repo_dir else None,
             approved_code_sha=release.get("approved_code_sha"),
+            named_code_sha=release.get("named_code_sha"),
         )
         if not pushed.get("git_push_ok"):
             return _result(
@@ -412,6 +562,8 @@ def run_controlled_publish(
                 pages_verified=False,
                 called_network=network,
                 publisher_invoked=invoked,
+                error_type=pushed.get("error_type") or "push_failed",
+                remote_sha_before=pushed.get("remote_sha_before"),
                 **common,
             )
         import hashlib
@@ -452,6 +604,23 @@ def run_controlled_publish(
                 remote_sha_before=pushed.get("remote_sha_before"),
                 **common,
             )
+        remote_commit = pushed.get("remote_commit")
+        if repo_dir and remote_commit:
+            present, _shown, _err = git_text(repo_dir, "cat-file", "-e", f"{remote_commit}^{{commit}}")
+            if present == 0 and not inherit_published_tip(repo_dir, remote_commit):
+                return _result(
+                    "local_inherit_failed",
+                    3,
+                    retryable=True,
+                    git_push_ok=True,
+                    pages_verified=True,
+                    baseline_advanced=False,
+                    called_network=network,
+                    publisher_invoked=True,
+                    error_type="local_inherit_failed",
+                    remote_commit=remote_commit,
+                    **common,
+                )
         state_path = out_dir / "state" / "baseline.json"
         payload = {
             "approval_id": release["approval_id"],
