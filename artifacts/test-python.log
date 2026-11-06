@@ -1,0 +1,19 @@
+test_bypass_and_publish_are_refused_without_leaking_the_canary (test_update_gate.UpdateGateTests.test_bypass_and_publish_are_refused_without_leaking_the_canary) ... ok
+test_empty_object_is_a_real_diff_and_scripts_cannot_publish (test_update_gate.UpdateGateTests.test_empty_object_is_a_real_diff_and_scripts_cannot_publish) ... ok
+test_invalid_candidate_keeps_the_success_baseline_and_writes_retry (test_update_gate.UpdateGateTests.test_invalid_candidate_keeps_the_success_baseline_and_writes_retry) ... ok
+test_manual_and_scheduled_share_the_same_judgment (test_update_gate.UpdateGateTests.test_manual_and_scheduled_share_the_same_judgment) ... ok
+test_missing_stale_and_large_approval_do_not_advance (test_update_gate.UpdateGateTests.test_missing_stale_and_large_approval_do_not_advance) ... ok
+test_naive_now_and_missing_candidate_do_not_seed_or_advance (test_update_gate.UpdateGateTests.test_naive_now_and_missing_candidate_do_not_seed_or_advance) ... ok
+test_nested_timestamp_is_not_in_the_ignore_set (test_update_gate.UpdateGateTests.test_nested_timestamp_is_not_in_the_ignore_set) ... ok
+test_published_data_file_is_not_rewritten (test_update_gate.UpdateGateTests.test_published_data_file_is_not_rewritten) ... ok
+test_reorder_is_semantic_but_not_large_and_metrics_are_large (test_update_gate.UpdateGateTests.test_reorder_is_semantic_but_not_large_and_metrics_are_large) ... ok
+test_same_candidate_can_be_simulated_once_and_not_by_an_older_approval (test_update_gate.UpdateGateTests.test_same_candidate_can_be_simulated_once_and_not_by_an_older_approval) ... ok
+test_scheduled_outside_slot_does_not_emit_a_candidate (test_update_gate.UpdateGateTests.test_scheduled_outside_slot_does_not_emit_a_candidate) ... ok
+test_slots_match_beijing_hours_only (test_update_gate.UpdateGateTests.test_slots_match_beijing_hours_only) ... ok
+test_three_identity_changes_are_large (test_update_gate.UpdateGateTests.test_three_identity_changes_are_large) ... ok
+test_timestamp_noise_is_not_a_change_and_blocker_is (test_update_gate.UpdateGateTests.test_timestamp_noise_is_not_a_change_and_blocker_is) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.049s
+
+OK

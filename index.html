@@ -3,446 +3,200 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>谱梦 · 进度监控</title>
 <meta name="robots" content="noindex" />
+<title>谱梦 · 进度监控</title>
 <style>
 :root {
-  --bg: #020617;
-  --bg-panel: #0B1220;
-  --card: #111827;
-  --card-alt: #0E1223;
-  --border: #1F2937;
-  --border-strong: #334155;
-  --text: #E5E7EB;
+  --bg: #070B14;
+  --surface: #0F172A;
+  --surface-2: #111C30;
+  --border: #1E293B;
+  --text: #F1F5F9;
   --muted: #94A3B8;
-  --accent: #2563EB;
-  --ok: #059669;
-  --warn: #D97706;
-  --danger: #DC2626;
-  --radius: 7px;
-  --pad: 12px;
+  --blue: #3B82F6;
+  --blue-ink: #BFDBFE;
+  --blue-deep: #1E3A5F;
+  --red: #EF4444;
+  --red-ink: #FEE2E2;
+  --red-deep: #7F1D1D;
+  --block: #30141C;
+  --block-border: #5A1E28;
+  --radius: 14px;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
-  font-family: "PingFang SC", "Noto Sans SC", system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.45;
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
+  font-family: "WenQuanYi Micro Hei", "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color-scheme: dark;
 }
-a { color: var(--accent); text-decoration: none; }
-header {
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+.wrap { max-width: 1848px; margin: 0 auto; padding: 18px 28px 32px; }
+.skip {
+  position: absolute; left: 12px; top: -48px; background: var(--blue); color: #fff;
+  padding: 8px 12px; border-radius: 8px; z-index: 5;
 }
-.header-inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px 16px;
-  justify-content: space-between;
+.skip:focus { top: 12px; }
+.hdr {
+  display: flex; justify-content: space-between; gap: 18px 28px; flex-wrap: wrap;
+  align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--border);
 }
-h1 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 650;
-  letter-spacing: 0.01em;
+h1 { margin: 0; font-size: 32px; line-height: 1.15; font-weight: 750; display: flex; gap: 10px; align-items: center; }
+.star { color: var(--blue); font-size: 22px; }
+.sub { margin: 8px 0 0; color: var(--muted); font-size: 18px; max-width: 46rem; }
+.hdr-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 0; max-width: 100%; }
+.badge-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 14px; }
+.badge {
+  border: 2px solid var(--blue); background: var(--blue-deep); color: var(--blue-ink);
+  padding: 8px 14px; border-radius: 10px; font-size: 16px; font-weight: 750;
 }
-.fresh {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.78rem;
-  color: var(--muted);
-  flex-wrap: wrap;
+.date { color: var(--muted); font-size: 18px; }
+.times { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; min-width: 0; justify-items: end; }
+.times dt { color: var(--muted); font-size: 16px; }
+.times dd { margin: 0; font-size: 16px; min-width: 0; text-align: right; }
+.sync-note, .time-help, .local-note { margin: 12px 0 0; }
+.sync-note, .time-help { color: var(--muted); font-size: 16px; }
+.time-help summary { cursor: pointer; }
+.local-note {
+  border: 1px solid var(--border); background: var(--surface); border-radius: 12px;
+  padding: 10px 12px; font-size: 16px; font-weight: 700;
 }
-.chip {
-  display: inline-block;
-  font-size: 0.68rem;
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--card-alt);
-  color: var(--muted);
-  margin-right: 4px;
-  vertical-align: middle;
-  white-space: nowrap;
+.local-note.hot { border-color: var(--red-deep); background: var(--block); }
+.fixture-banner {
+  margin: 0 0 12px; padding: 10px 12px; border-radius: 12px;
+  background: var(--block); color: var(--red-ink); border: 1px solid var(--block-border);
 }
-.chip.line-pm { color: #93C5FD; border-color: #1E3A8A; }
-.chip.line-dy { color: #F9A8D4; border-color: #9D174D; }
-.chip.owner { color: var(--text); }
-.chip.ok { color: var(--ok); border-color: #065F46; }
-.chip.warn { color: var(--warn); border-color: #92400E; }
-.chip.danger { color: var(--danger); border-color: #7F1D1D; }
-.chip.accent { color: #93C5FD; border-color: #1E40AF; background: #0B1B3A; }
-main {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 10px 12px 36px;
-  display: grid;
-  gap: 10px;
+.sec { margin-top: 22px; }
+.sec-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin-bottom: 12px; }
+.sec-h h2 { margin: 0; font-size: 26px; font-weight: 750; }
+.sec-h p { margin: 0; color: var(--muted); font-size: 16px; flex: 1 1 220px; min-width: 0; }
+.mark { color: var(--blue); margin-right: 8px; }
+.mark.warn { color: var(--red); }
+.legend { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 16px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.dot.bad { background: var(--red); }
+.dot.run { background: #64748B; }
+.decisions, .today, .metrics { display: grid; gap: 14px; }
+.decisions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.today, .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.card {
+  position: relative; min-width: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px 16px 22px;
 }
-section {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--pad);
+.card::before {
+  content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 5px;
+  border-radius: 0 3px 3px 0; background: var(--blue);
 }
-section h2 {
-  margin: 0 0 10px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.04em;
+.card.block { background: var(--block); border-color: var(--block-border); }
+.card.block::before { width: 6px; background: var(--red); }
+.card.metric::before { display: none; }
+.card h3 { margin: 0 0 8px; font-size: 22px; line-height: 1.35; }
+.note, .blocker-line, .eta, .progress-unknown, .done-line, .block-line { margin: 0 0 10px; color: var(--muted); font-size: 18px; }
+.blocker-line, .block-line { color: #FCA5A5; }
+.meta, .actions, .bar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.pill {
+  display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px;
+  border-radius: 7px; font-size: 16px; font-weight: 750;
 }
-/* 拍板：最高视觉权重，紧贴顶栏 */
-#sec-decisions {
-  border-color: #1E40AF;
-  background: linear-gradient(180deg, #0B1B3A 0%, var(--card) 48%);
-  box-shadow: inset 3px 0 0 var(--accent);
+.pill.blue { background: var(--blue-deep); color: var(--blue-ink); }
+.pill.red { background: var(--red-deep); color: var(--red-ink); }
+.pill.muted { color: var(--muted); border: 1px solid var(--border); font-weight: 650; }
+.btn {
+  border: 0; border-radius: 9px; min-height: 44px; padding: 8px 16px;
+  font: inherit; font-size: 18px; font-weight: 750; cursor: pointer;
 }
-#sec-decisions h2 {
-  color: #93C5FD;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.btn.primary { background: var(--blue); color: #fff; margin-left: auto; }
+.btn.danger { background: var(--red-deep); color: var(--red-ink); }
+.btn.ghost { background: transparent; color: var(--text); border: 1px solid #334155; }
+.linkish {
+  background: none; border: 0; color: var(--blue); font: inherit; font-weight: 750;
+  padding: 0 0 0 8px; cursor: pointer;
 }
-#sec-decisions .count {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.72rem;
-  color: var(--muted);
-  font-weight: 500;
+.bar { flex: 1 1 80px; height: 10px; background: var(--border); border-radius: 99px; overflow: hidden; min-width: 0; }
+.bar > span { display: block; height: 100%; background: var(--blue); }
+.pct { min-width: 3rem; font-size: 16px; font-weight: 700; }
+.local-flag { margin: 10px 0 0; color: var(--blue-ink); font-weight: 750; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 16px 12px; }
+.day { display: grid; grid-template-columns: 9.2rem 1.4rem minmax(0, 1fr); gap: 8px; align-items: start; padding: 7px 0; }
+.date { color: var(--muted); font-size: 16px; }
+.day.today .date { color: var(--text); font-weight: 750; }
+.node-col { position: relative; display: flex; justify-content: center; min-height: 18px; }
+.node-col::before { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.day:first-child .node-col::before { top: 8px; }
+.day:last-child .node-col::before { bottom: auto; height: 14px; }
+.node {
+  width: 12px; height: 12px; margin-top: 4px; border-radius: 50%; border: 2px solid var(--blue);
+  background: var(--bg); position: relative; z-index: 1;
 }
-.decision {
-  border: 1px solid #1E3A8A;
-  border-left: 3px solid var(--accent);
-  background: var(--card-alt);
-  border-radius: 0 6px 6px 0;
-  padding: 9px 11px;
-  margin-bottom: 7px;
+.node.red { background: var(--red); border-color: var(--red); }
+.node.today { width: 16px; height: 16px; background: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.25); }
+.today-box { border: 2px solid var(--blue); border-radius: 12px; background: var(--surface-2); padding: 12px 14px 8px; min-width: 0; }
+.today-box h3 { margin: 0 0 8px; font-size: 22px; }
+.compact { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: space-between; min-width: 0; }
+.compact p { margin: 0; min-width: 0; flex: 1 1 12rem; color: var(--muted); }
+.compact .bad, .bad { color: #FCA5A5; }
+.strong { font-weight: 750; }
+.corner { float: right; color: var(--muted); font-size: 16px; }
+.ml { color: var(--muted); font-size: 16px; clear: both; }
+.num { font-size: 40px; font-weight: 750; line-height: 1.1; margin: 6px 0; }
+.delta, .series, .meta-line, .empty { color: var(--muted); font-size: 16px; }
+.other, #sec-local { margin-top: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+.other summary, #sec-local h2 { font-size: 20px; font-weight: 750; }
+.other-item, .record { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; min-width: 0; }
+.record p { margin: 0 0 4px; }
+.foot { margin-top: 18px; color: var(--muted); font-size: 14px; }
+.foot p { margin: 0 0 6px; }
+.backdrop { position: fixed; inset: 0; background: rgba(2, 6, 16, .72); display: grid; place-items: center; padding: 16px; z-index: 40; }
+.dialog { width: min(520px, 100%); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.dialog h3 { margin: 0 0 8px; font-size: 22px; }
+.warn { color: var(--red-ink); font-weight: 750; }
+.object-line { color: var(--muted); }
+textarea, label { display: block; width: 100%; }
+textarea {
+  margin-top: 6px; min-height: 96px; padding: 10px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit;
 }
-.decision:last-child { margin-bottom: 0; }
-.decision .t { font-size: 0.9rem; font-weight: 600; }
-.decision .m { color: var(--muted); font-size: 0.76rem; margin-top: 4px; }
-/* 今日卡点 */
-#sec-doing .task {
-  border-color: #334155;
+.err { min-height: 1.2em; color: #FCA5A5; font-weight: 700; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
-#sec-doing .task.has-blocker {
-  border-left: 3px solid var(--danger);
+:focus-visible { outline: 2px solid #F8FAFC; outline-offset: 2px; }
+.note, .card h3, .today-box p, .compact p, .other-item, .times dd, .sub { overflow-wrap: anywhere; }
+@media (min-width: 1100px) {
+  h1 { font-size: 40px; }
+  .card h3, .today-box h3 { font-size: 24px; }
+  .btn { font-size: 19px; }
+  .sub { font-size: 20px; }
 }
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+@media (max-width: 1100px) {
+  .today, .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.metric {
-  background: var(--card-alt);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px;
-}
-.metric .v {
-  font-size: 1.15rem;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-}
-.metric .l { color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
-.cols-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.col-head {
-  font-size: 0.75rem;
-  color: var(--muted);
-  margin: 0 0 6px;
-  font-weight: 600;
-}
-.task {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  background: var(--card-alt);
-}
-.task:last-child { margin-bottom: 0; }
-.task .t { font-size: 0.86rem; }
-.task .m {
-  color: var(--muted);
-  font-size: 0.74rem;
-  margin-top: 4px;
-}
-.task .blocker {
-  color: var(--danger);
-  font-size: 0.74rem;
-  margin-top: 4px;
-}
-.task .eta {
-  color: #93C5FD;
-  font-size: 0.72rem;
-  margin-top: 3px;
-}
-.empty { color: var(--muted); font-size: 0.78rem; padding: 6px 0; }
-.dual-panel {
-  background: var(--card-alt);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px;
-  min-height: 64px;
-}
-.dual-panel h3 {
-  margin: 0 0 8px;
-  font-size: 0.88rem;
-  font-weight: 650;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-details.fold {
-  margin-top: 6px;
-  border-top: 1px solid var(--border);
-  padding-top: 6px;
-}
-details.fold > summary {
-  cursor: pointer;
-  list-style: none;
-  font-size: 0.74rem;
-  color: var(--muted);
-  font-weight: 600;
-  user-select: none;
-  padding: 2px 0;
-}
-details.fold > summary::-webkit-details-marker { display: none; }
-details.fold > summary::before {
-  content: "▸ ";
-  color: var(--border-strong);
-}
-details.fold[open] > summary::before { content: "▾ "; }
-details.fold .fold-body { margin-top: 6px; }
-.timeline-day {
-  border-bottom: 1px solid var(--border);
-  padding: 8px 0;
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  gap: 10px;
-}
-.timeline-day:last-child { border-bottom: 0; padding-bottom: 0; }
-.timeline-day .date {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
-  color: var(--muted);
-  font-weight: 600;
-}
-.tl-group { margin-bottom: 4px; }
-.tl-group .lab {
-  font-size: 0.68rem;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-.tl-group ul {
-  margin: 0;
-  padding-left: 16px;
-  font-size: 0.8rem;
-}
-.tl-group li { margin-bottom: 2px; }
-footer {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 12px 28px;
-  color: var(--muted);
-  font-size: 0.72rem;
-}
-.err { color: var(--danger); }
-#sec-metrics { opacity: 0.92; }
-@media (max-width: 840px) {
-  .metrics { grid-template-columns: 1fr 1fr; }
-  .cols-2 { grid-template-columns: 1fr; }
-  .timeline-day { grid-template-columns: 1fr; gap: 4px; }
-}
-@media (max-width: 420px) {
-  .metrics { grid-template-columns: 1fr; }
+@media (max-width: 720px) {
+  .wrap { padding: 14px 14px 28px; }
+  h1 { font-size: 28px; }
+  .decisions, .today, .metrics { grid-template-columns: minmax(0, 1fr); }
+  .legend { margin-left: 0; }
+  .hdr-side, .badge-row { align-items: flex-start; justify-content: flex-start; }
+  .times, .times dd { justify-items: start; text-align: left; }
+  .btn.primary { margin-left: 0; }
+  .card .btn, .dialog .btn { width: 100%; }
+  .day { grid-template-columns: 1.4rem minmax(0, 1fr); }
+  .day .date { grid-column: 1 / -1; }
+  .num { font-size: 32px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
+  * { scroll-behavior: auto !important; transition: none !important; }
 }
 </style>
 </head>
 <body>
-<header>
-  <div class="header-inner">
-    <h1 id="title">谱梦 · 进度监控</h1>
-    <div class="fresh" id="fresh">加载中…</div>
-  </div>
-</header>
-<main id="app"></main>
-<footer id="foot"></footer>
-<script>
-const REFRESH_MS = 30000;
-
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c =>
-    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-function parseStamp(s) {
-  if (!s) return null;
-  const m = String(s).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
-  if (!m) return null;
-  return new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00+08:00`);
-}
-
-function freshnessMeta(updatedAt) {
-  const t = parseStamp(updatedAt);
-  if (!t || isNaN(t.getTime())) {
-    return { label: '未知', cls: 'danger', age: null };
-  }
-  const ageH = (Date.now() - t.getTime()) / 3600000;
-  if (ageH > 24) return { label: '已超过 24 小时未刷新', cls: 'danger', age: ageH };
-  if (ageH > 6) return { label: '已超过 6 小时未刷新', cls: 'warn', age: ageH };
-  return { label: '数据新鲜', cls: 'ok', age: ageH };
-}
-
-function lineChip(label) {
-  if (label === '谱梦' || label === 'pumeng') return '<span class="chip line-pm">谱梦</span>';
-  if (label === '抖音' || label === 'douyin') return '<span class="chip line-dy">抖音</span>';
-  return label ? `<span class="chip">${esc(label)}</span>` : '';
-}
-
-function taskCard(t, opts) {
-  const line = lineChip(t.line_label || t.line);
-  const owner = t.owner ? `<span class="chip owner">${esc(t.owner)}</span>` : '';
-  const blk = !!t.blocker;
-  const cls = 'task' + (blk && opts && opts.emphasizeBlocker ? ' has-blocker' : '');
-  return `<div class="${cls}">
-    <div class="t">${line}${owner}${esc(t.title || '')}</div>
-    ${t.note ? `<div class="m">${esc(t.note)}</div>` : ''}
-    ${t.eta ? `<div class="eta">ETA · ${esc(t.eta)}</div>` : ''}
-    ${t.blocker ? `<div class="blocker">卡点 · ${esc(t.blocker)}</div>` : ''}
-  </div>`;
-}
-
-function foldGroup(label, items, lineKey) {
-  const n = items.length;
-  if (!n) return '';
-  const mapped = items.map(t => taskCard({...t, line: lineKey}));
-  return `<details class="fold">
-    <summary>${esc(label)} · ${n}</summary>
-    <div class="fold-body">${mapped.join('')}</div>
-  </details>`;
-}
-
-function linePanel(title, chipClass, lineKey, bucketObj) {
-  const doing = bucketObj.doing || [];
-  const todo = bucketObj.todo || [];
-  const paused = bucketObj.paused || [];
-  const done = bucketObj.done_today || [];
-  return `<div class="dual-panel">
-    <h3><span class="chip ${chipClass}">${esc(title)}</span>
-      <span class="chip">${doing.length} 进行中</span></h3>
-    <div class="col-head">进行中</div>
-    ${doing.length
-      ? doing.map(t => taskCard({...t, line: lineKey}, {emphasizeBlocker: true})).join('')
-      : '<div class="empty">（无）</div>'}
-    ${foldGroup('待办', todo, lineKey)}
-    ${foldGroup('暂停', paused, lineKey)}
-    ${foldGroup('今日完成', done, lineKey)}
-  </div>`;
-}
-
-function render(d) {
-  document.getElementById('title').textContent = d.title || '谱梦 · 进度监控';
-  const fr = freshnessMeta(d.updated_at);
-  document.getElementById('fresh').innerHTML =
-    `<span class="chip ${fr.cls}">${esc(fr.label)}</span>` +
-    `<span>最后更新 ${esc(d.updated_at || '—')}</span>` +
-    `<span>· 约 ${esc(String(d.refresh_seconds || 30))}s 自刷新</span>`;
-
-  const today = d.today || {};
-  const lines = d.lines || {};
-  const decisions = d.decisions || [];
-  const timeline = d.timeline || [];
-  const m = d.metrics || {};
-  const tables = m.feishu_tables || {};
-  const doing = today.doing || [];
-
-  // DOM 顺序硬性：拍板 → 今日卡点 → 双线 → 时间线 → 聚合
-  document.getElementById('app').innerHTML = `
-    <section id="sec-decisions">
-      <h2>需 liu 拍板 <span class="count">${decisions.length} 项</span></h2>
-      ${decisions.length
-        ? decisions.map(x => `<div class="decision">
-            <div class="t"><span class="chip accent">拍板</span><span class="chip owner">${esc(x.owner || 'liu')}</span>${esc(x.title || '')}</div>
-            ${x.note ? `<div class="m">${esc(x.note)}</div>` : ''}
-          </div>`).join('')
-        : '<div class="empty">暂无待拍板项</div>'}
-    </section>
-
-    <section id="sec-doing">
-      <h2>今日卡点 / 进行中 · 谁 · 卡点 · ETA</h2>
-      ${doing.length
-        ? doing.map(t => taskCard(t, {emphasizeBlocker: true})).join('')
-        : '<div class="empty">今日无进行中任务</div>'}
-    </section>
-
-    <section id="sec-lines">
-      <h2>双线 · 谱梦 | 抖音（进行中展开；其余折叠）</h2>
-      <div class="cols-2">
-        ${linePanel('谱梦线', 'line-pm', 'pumeng', lines.pumeng || {})}
-        ${linePanel('抖音线', 'line-dy', 'douyin', lines.douyin || {})}
-      </div>
-    </section>
-
-    <section id="sec-timeline">
-      <h2>7 日时间线</h2>
-      ${timeline.map(day => {
-        const empty = !(day.did||[]).length && !(day.closed||[]).length && !(day.opened||[]).length;
-        return `<div class="timeline-day">
-          <div class="date">${esc(day.date || '')}</div>
-          <div>
-            ${empty ? '<div class="empty">无记录</div>' : ''}
-            ${(day.did||[]).length ? `<div class="tl-group"><div class="lab">做了什么</div><ul>${day.did.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
-            ${(day.closed||[]).length ? `<div class="tl-group"><div class="lab">关掉什么</div><ul>${day.closed.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
-            ${(day.opened||[]).length ? `<div class="tl-group"><div class="lab">新增待办</div><ul>${day.opened.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
-          </div>
-        </div>`;
-      }).join('') || '<div class="empty">无时间线</div>'}
-    </section>
-
-    <section id="sec-metrics">
-      <h2>聚合数字</h2>
-      <div class="metrics">
-        <div class="metric"><div class="v">${esc(String(m.songs_on_platform_approx ?? '—'))}</div><div class="l">歌曲在架（约）</div></div>
-        <div class="metric"><div class="v">${esc(String(tables.play_snapshots ?? '—'))}</div><div class="l">播放快照条数</div></div>
-        <div class="metric"><div class="v">${esc(String(tables.songs ?? '—'))} / ${esc(String(tables.artist_albums ?? '—'))}</div><div class="l">歌曲表 / 歌手专辑表</div></div>
-        <div class="metric"><div class="v">${esc(String(m.pm_ids_count ?? '—'))}</div><div class="l">本批 PM 编号数</div></div>
-      </div>
-    </section>
-  `;
-  document.getElementById('foot').textContent = d.disclaimer || '';
-}
-
-async function load() {
-  try {
-    const res = await fetch('data.json?ts=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const d = await res.json();
-    render(d);
-  } catch (e) {
-    document.getElementById('fresh').innerHTML = '<span class="err">加载失败：' + esc(e.message) + '</span>';
-  }
-}
-
-load();
-setInterval(load, REFRESH_MS);
-</script>
+<div id="app"><p class="boot">加载中…</p></div>
+<script src="dashboard.js"></script>
+<script>PumengDash.mount();</script>
 </body>
 </html>

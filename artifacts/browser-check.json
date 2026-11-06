@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "base": "http://127.0.0.1:41949",
+  "columns": {
+    "desktop": {
+      "width": 1920,
+      "decisions": "889px 889px",
+      "today": "437.5px 437.5px 437.5px 437.5px",
+      "metrics": "437.5px 437.5px 437.5px 437.5px"
+    },
+    "mobile": {
+      "width": 390,
+      "decisions": "362px",
+      "today": "362px",
+      "metrics": "362px"
+    }
+  }
+}

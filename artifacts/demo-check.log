@@ -1,0 +1,94 @@
+$ python3 scripts/check_update.py --baseline /tmp/tmp2w5cp1k3/base.json --candidate /tmp/tmp2w5cp1k3/cand.json --trigger scheduled --now 2026-11-06T09:00:00+08:00 --out /tmp/tmp2w5cp1k3/out
+exit 0
+{
+  "baseline_advanced": false,
+  "baseline_sha_after": null,
+  "baseline_sha_before": null,
+  "candidate_semantic_sha256": "c4b643fb0b01b637287551e347552da68993142d3668b6a0d047bcba7972fd1c",
+  "comparison_semantic_sha256": "c4b643fb0b01b637287551e347552da68993142d3668b6a0d047bcba7972fd1c",
+  "exit_code": 0,
+  "field_change_count": 0,
+  "ignored_changes": [
+    "source_updated_at",
+    "updated_at"
+  ],
+  "in_beijing_slot": true,
+  "large": false,
+  "large_reasons": [],
+  "message": "没有实质语义变化，不生成待发布候选。",
+  "now": "2026-11-06T09:00:00+08:00",
+  "now_source": "injected",
+  "production_publish": false,
+  "retryable": false,
+  "semantic_sha256": "c4b643fb0b01b637287551e347552da68993142d3668b6a0d047bcba7972fd1c",
+  "status": "no_semantic_change",
+  "summary_sha256": "f36b180a7797e5aed471806a444e5e33abf88927c127cb00061465c77311c42d",
+  "trigger": "scheduled"
+}
+
+$ python3 scripts/check_update.py --baseline /tmp/tmp2w5cp1k3/base.json --candidate /tmp/tmp2w5cp1k3/changed.json --trigger manual --now 2026-11-06T10:30:00+08:00 --out /tmp/tmp2w5cp1k3/out/manual
+exit 0
+{
+  "baseline_advanced": false,
+  "baseline_sha_after": null,
+  "baseline_sha_before": null,
+  "candidate_semantic_sha256": "56576f4ec3b08f475f3e7e6b5389e230a3f67cfecaa710ce85876ab7c834b327",
+  "comparison_semantic_sha256": "c4b643fb0b01b637287551e347552da68993142d3668b6a0d047bcba7972fd1c",
+  "exit_code": 0,
+  "field_change_count": 1,
+  "in_beijing_slot": false,
+  "large": false,
+  "large_reasons": [],
+  "message": "有实质变化，已写入待发布候选。未发布。",
+  "now": "2026-11-06T10:30:00+08:00",
+  "now_source": "injected",
+  "production_publish": false,
+  "retryable": false,
+  "semantic_sha256": "56576f4ec3b08f475f3e7e6b5389e230a3f67cfecaa710ce85876ab7c834b327",
+  "status": "candidate_ready",
+  "summary_sha256": "a9268e499ca49ab65cc6904e2a8b2765cc6839f288d0ae1a6156f6044e4ee12a",
+  "trigger": "manual"
+}
+
+$ python3 scripts/check_update.py --baseline /tmp/tmp2w5cp1k3/base.json --candidate /tmp/tmp2w5cp1k3/changed.json --trigger scheduled --now 2026-11-06T08:07:00+08:00 --out /tmp/tmp2w5cp1k3/out/slot
+exit 0
+{
+  "baseline_advanced": false,
+  "baseline_sha_after": null,
+  "baseline_sha_before": null,
+  "candidate_semantic_sha256": "56576f4ec3b08f475f3e7e6b5389e230a3f67cfecaa710ce85876ab7c834b327",
+  "comparison_semantic_sha256": "c4b643fb0b01b637287551e347552da68993142d3668b6a0d047bcba7972fd1c",
+  "exit_code": 0,
+  "field_change_count": 1,
+  "in_beijing_slot": false,
+  "large": false,
+  "large_reasons": [],
+  "message": "定时调用不在北京时间 9/12/15/18/21 点，未生成待发布候选，也未模拟发布。",
+  "now": "2026-11-06T08:07:00+08:00",
+  "now_source": "injected",
+  "production_publish": false,
+  "retryable": false,
+  "semantic_sha256": "56576f4ec3b08f475f3e7e6b5389e230a3f67cfecaa710ce85876ab7c834b327",
+  "status": "outside_slot",
+  "summary_sha256": "a9268e499ca49ab65cc6904e2a8b2765cc6839f288d0ae1a6156f6044e4ee12a",
+  "trigger": "scheduled",
+  "would_change": true
+}
+
+$ python3 scripts/check_update.py --publish --baseline /tmp/tmp2w5cp1k3/base.json --candidate /tmp/tmp2w5cp1k3/cand.json --out /tmp/tmp2w5cp1k3/out/pub
+exit 5
+{
+  "allow_env_ignored": true,
+  "baseline_advanced": false,
+  "baseline_sha_after": null,
+  "baseline_sha_before": null,
+  "exit_code": 5,
+  "message": "生产发布在这个入口里没有实现，环境变量也不能打开它。",
+  "now": "2026-11-06T10:44:32.289376+08:00",
+  "now_source": "clock",
+  "production_publish": false,
+  "retryable": false,
+  "status": "production_publish_disabled",
+  "trigger": "scheduled"
+}
+
