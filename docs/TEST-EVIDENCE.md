@@ -19,3 +19,9 @@ NODE_PATH=".test-tools/node_modules${NODE_PATH:+:$NODE_PATH}" node tests/browser
 ## 受控适配器那次
 
 被测代码是 `761e95fb62784d90b316132a4e2e14764b5e0719`。请看 `artifacts/test-python-761e95fb6278.log` 和 `artifacts/test-python-adapter-final.log`，不要拿上面的 `00cc93a` 日志代替。两处目录的 sha256 都是 `10f071b480c4b8358816c70d7935d34ecb7644343c9202a8c4db0ee884526ab5`。结尾是 `Ran 32 tests in 0.136s` 和 `OK`，其中替换包 6 项、受控适配器 6 项。Node 与浏览器的对应文件名同样带 `761e95fb6278` 和 `adapter-final`。对照表是 `artifacts/test-run-761e95f.json`。这次默认态截图 mtime 是 `2026-11-06T03:37:44Z`，视口断言仍是 1080 与 `metricsBottom` 1040.578125。写入日志的提交若更新了本文件，那个 SHA 不是被测树。
+
+## 返修 B1–B3 / M1
+
+被测代码是 `100451dfbffca33da2fbe989d77d66fc88661caf`。请看 `artifacts/test-python-100451dfbffc.log` 和 `artifacts/test-python-repair-final.log`。两处目录 sha256 都是 `15f0f27d4600b1519627502e3669695eab450c52265313cf6d3f79774f9b0e9b`。结尾是 `Ran 34 tests in 0.252s` 和 `OK`。本地 bare 回滚与过期锁回收这两条都在这份日志里，状态是 ok。Node、浏览器文件名同样带 `100451dfbffc` 和 `repair-final`。对照表是 `artifacts/test-run-100451d.json`。
+
+这次默认态截图 mtime 是 `2026-11-06T04:00:55Z`。`browser-check.json` 的 `fontPx` 为标题 43、区标题 27、卡标题 24、正文 20、按钮 20、指标 42、标签 16。`metricsBottom` 仍不超过 1080，`openDisclosures` 为 0。390 与 320 的截图是同一次运行写出的。后续如果只把本段说明提交进去，那个 SHA 不是被测树。

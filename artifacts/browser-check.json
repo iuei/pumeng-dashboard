@@ -1,13 +1,13 @@
 {
   "ok": true,
   "defaultState": true,
-  "base": "http://127.0.0.1:45651",
+  "base": "http://127.0.0.1:33145",
   "columns": {
     "desktop": {
       "width": 1920,
-      "decisions": "891px 891px",
-      "today": "440.5px 440.5px 440.5px 440.5px",
-      "metrics": "440.5px 440.5px 440.5px 440.5px"
+      "decisions": "895px 895px",
+      "today": "442.5px 442.5px 442.5px 442.5px",
+      "metrics": "442.5px 442.5px 442.5px 442.5px"
     },
     "mobile": {
       "width": 390,
@@ -18,9 +18,18 @@
   },
   "fold": {
     "defaultState": true,
-    "metricsBottom": 1040.578125,
-    "metricsTop": 891.78125,
+    "metricsBottom": 960.109375,
+    "metricsTop": 826.546875,
     "viewport": 1080,
-    "openDisclosures": 0
+    "openDisclosures": 0,
+    "fontPx": {
+      "title": 43,
+      "section": 27,
+      "card": 24,
+      "body": 20,
+      "button": 20,
+      "metric": 42,
+      "pill": 16
+    }
   }
 }
