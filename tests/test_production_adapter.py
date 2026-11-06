@@ -352,6 +352,93 @@ class ProductionAdapterTests(unittest.TestCase):
             self.assertEqual(mismatch["status"], "push_failed")
             self.assertEqual(subprocess.run(["git", "--git-dir", str(bare), "rev-parse", "main"], check=True, capture_output=True, text=True, env=env).stdout.strip(), before)
 
+    def test_empty_bare_deletes_main_when_pages_do_not_match(self):
+        import subprocess
+        with self.case_dir() as tmp:
+            env = os.environ.copy()
+            env.pop("GIT_DIR", None)
+            env.pop("GIT_WORK_TREE", None)
+            work = tmp / "work"
+            bare = tmp / "empty.git"
+            work.mkdir()
+            subprocess.run(["git", "init", "-b", "main", str(work)], check=True, capture_output=True, env=env)
+            (work / "data.json").write_bytes(b'{"tree":"local-only"}\n')
+            subprocess.run(["git", "-C", str(work), "add", "data.json"], check=True, capture_output=True, env=env)
+            subprocess.run(["git", "-C", str(work), "-c", "user.email=qa@example.invalid", "-c", "user.name=qa", "commit", "-m", "base"], check=True, capture_output=True, env=env)
+            head = subprocess.run(["git", "-C", str(work), "rev-parse", "HEAD"], check=True, capture_output=True, text=True, env=env).stdout.strip()
+            subprocess.run(["git", "init", "--bare", "-b", "main", str(bare)], check=True, capture_output=True, env=env)
+            remote = bare.resolve().as_uri()
+            self.assertNotIn("github.com", remote)
+            before = subprocess.run(["git", "ls-remote", remote, "refs/heads/main"], capture_output=True, text=True, env=env).stdout.strip()
+            self.assertEqual(before, "")
+            candidate = built_at(9, 0)
+            candidate["decisions"][0]["title"] = "空库候选"
+            raw = json.dumps(candidate, ensure_ascii=False).encode("utf-8")
+            result = run_controlled_publish(
+                baseline=built_at(8, 7),
+                candidate=candidate,
+                trigger="manual",
+                now=datetime(2026, 11, 6, 9, 0, tzinfo=CST),
+                install=install() | {"remote": remote},
+                release=release_for(built_at(8, 7), candidate) | {"approved_code_sha": head},
+                running_sha=head,
+                out_dir=tmp / "out",
+                repo_dir=work,
+                publisher=GitPagesPublisher(fetch=lambda _url: b'{"not":"candidate"}'),
+                candidate_bytes=raw,
+            )
+            after = subprocess.run(["git", "ls-remote", remote, "refs/heads/main"], capture_output=True, text=True, env=env).stdout.strip()
+            self.assertEqual(result["status"], "pages_verify_failed")
+            self.assertTrue(result["rolled_back"])
+            self.assertFalse(result["git_push_ok"])
+            self.assertFalse(result["baseline_advanced"])
+            self.assertFalse((tmp / "out" / "state" / "baseline.json").exists())
+            self.assertEqual(after, "")
+
+    def test_rejected_rollback_does_not_report_push_success(self):
+        import subprocess
+        with self.case_dir() as tmp:
+            env = os.environ.copy()
+            env.pop("GIT_DIR", None)
+            env.pop("GIT_WORK_TREE", None)
+            work = tmp / "work"
+            bare = tmp / "deny.git"
+            work.mkdir()
+            subprocess.run(["git", "init", "-b", "main", str(work)], check=True, capture_output=True, env=env)
+            (work / "data.json").write_bytes(b'{"tree":"checkout-head"}\n')
+            subprocess.run(["git", "-C", str(work), "add", "data.json"], check=True, capture_output=True, env=env)
+            subprocess.run(["git", "-C", str(work), "-c", "user.email=qa@example.invalid", "-c", "user.name=qa", "commit", "-m", "base"], check=True, capture_output=True, env=env)
+            head = subprocess.run(["git", "-C", str(work), "rev-parse", "HEAD"], check=True, capture_output=True, text=True, env=env).stdout.strip()
+            subprocess.run(["git", "init", "--bare", "-b", "main", str(bare)], check=True, capture_output=True, env=env)
+            subprocess.run(["git", "-C", str(work), "push", str(bare), "HEAD:refs/heads/main"], check=True, capture_output=True, env=env)
+            subprocess.run(["git", "--git-dir", str(bare), "config", "receive.denyNonFastForwards", "true"], check=True, capture_output=True, env=env)
+            before = subprocess.run(["git", "--git-dir", str(bare), "rev-parse", "main"], check=True, capture_output=True, text=True, env=env).stdout.strip()
+            remote = bare.resolve().as_uri()
+            self.assertNotIn("github.com", remote)
+            candidate = built_at(9, 0)
+            candidate["decisions"][0]["title"] = "回滚被拒候选"
+            raw = json.dumps(candidate, ensure_ascii=False).encode("utf-8")
+            result = run_controlled_publish(
+                baseline=built_at(8, 7),
+                candidate=candidate,
+                trigger="manual",
+                now=datetime(2026, 11, 6, 9, 0, tzinfo=CST),
+                install=install() | {"remote": remote},
+                release=release_for(built_at(8, 7), candidate) | {"approved_code_sha": head},
+                running_sha=head,
+                out_dir=tmp / "out",
+                repo_dir=work,
+                publisher=GitPagesPublisher(fetch=lambda _url: b'{"not":"candidate"}'),
+                candidate_bytes=raw,
+            )
+            after = subprocess.run(["git", "--git-dir", str(bare), "rev-parse", "main"], check=True, capture_output=True, text=True, env=env).stdout.strip()
+            self.assertEqual(after, before)
+            self.assertFalse(result["baseline_advanced"])
+            self.assertFalse(result["git_push_ok"] and result["rolled_back"] is False)
+            self.assertFalse((tmp / "out" / "state" / "baseline.json").exists())
+            self.assertIn(result["status"], {"pages_verify_failed", "rollback_failed"})
+            self.assertTrue(result["retryable"])
+
     def test_dead_lock_is_reclaimed_and_live_lock_is_not(self):
         with self.case_dir() as tmp:
             baseline = built_at(8, 7)

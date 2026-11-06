@@ -140,6 +140,7 @@ class GitPagesPublisher:
         prepared["expected_semantic_sha"] = expected_semantic_sha
         prepared["branch"] = branch
         self._before = prepared.get("remote_sha_before")
+        self._pushed = bool(prepared.get("git_push_ok"))
         self._remote = remote
         self._repo_dir = repo_dir or os.getcwd()
         return prepared
@@ -155,15 +156,29 @@ class GitPagesPublisher:
         return {"ok": ok, "git_push_ok": True, "pages_verified": ok, "error_type": None if ok else "pages_hash_mismatch"}
 
     def rollback(self):
-        before = getattr(self, "_before", None)
         remote = getattr(self, "_remote", None)
-        if not before or not remote:
+        repo = getattr(self, "_repo_dir", None)
+        if not getattr(self, "_pushed", False) or not remote or not repo:
             return False
-        argv = ["git", "-C", str(self._repo_dir), "push", remote, f"+{before}:refs/heads/main"]
         if "github.com" in remote.lower() and os.environ.get("PUMENG_ALLOW_GITHUB_PUBLISH") != "1":
             return False
-        completed = self.runner(argv)
-        return completed.get("returncode") == 0
+        before = getattr(self, "_before", None)
+        if before:
+            forced = self.runner(["git", "-C", str(repo), "push", remote, f"+{before}:refs/heads/main"])
+            if forced.get("returncode") == 0 and remote_main_sha(remote) == before:
+                return True
+        if not _delete_main_ref(remote, repo, self.runner):
+            return False
+        if before is None:
+            return remote_main_sha(remote) is None
+        restored = self.runner(["git", "-C", str(repo), "push", remote, f"{before}:refs/heads/main"])
+        if restored.get("returncode") != 0 or remote_main_sha(remote) != before:
+            return False
+        bare = _file_remote_dir(remote)
+        if bare is not None:
+            import subprocess
+            subprocess.run(["git", "--git-dir", str(bare), "symbolic-ref", "HEAD", "refs/heads/main"], capture_output=True, env=git_env())
+        return remote_main_sha(remote) == before
 
 
 def git_env():
@@ -177,6 +192,28 @@ def git_text(repo: Path, *args, input_bytes=None) -> tuple:
     import subprocess
     proc = subprocess.run(["git", "-C", str(repo), *args], input=input_bytes, capture_output=True, env=git_env())
     return proc.returncode, proc.stdout, proc.stderr
+
+
+def _file_remote_dir(remote: str):
+    if not isinstance(remote, str) or not remote.startswith("file://"):
+        return None
+    from urllib.parse import unquote, urlparse
+    path = Path(unquote(urlparse(remote).path))
+    return path if path.exists() else None
+
+
+def _delete_main_ref(remote: str, repo, runner) -> bool:
+    """Remove refs/heads/main. A bare repo refuses to delete its current branch until HEAD moves."""
+    deleted = runner(["git", "-C", str(repo), "push", remote, ":refs/heads/main"])
+    if deleted.get("returncode") == 0:
+        return True
+    bare = _file_remote_dir(remote)
+    if bare is None:
+        return False
+    import subprocess
+    subprocess.run(["git", "--git-dir", str(bare), "symbolic-ref", "HEAD", "refs/heads/pumeng-empty"], capture_output=True, env=git_env())
+    deleted = runner(["git", "-C", str(repo), "push", remote, ":refs/heads/main"])
+    return deleted.get("returncode") == 0
 
 
 def remote_main_sha(remote: str) -> str | None:
@@ -388,11 +425,25 @@ def run_controlled_publish(
                     rolled = bool(pub.rollback())
                 except Exception:
                     rolled = False
+            if hasattr(pub, "rollback") and not rolled:
+                return _result(
+                    "rollback_failed",
+                    3,
+                    retryable=True,
+                    git_push_ok=False,
+                    pages_verified=False,
+                    rolled_back=False,
+                    called_network=network,
+                    publisher_invoked=invoked,
+                    error_type="rollback_rejected",
+                    remote_sha_before=pushed.get("remote_sha_before"),
+                    **common,
+                )
             return _result(
                 "pages_verify_failed",
                 3,
                 retryable=True,
-                git_push_ok=False if rolled else True,
+                git_push_ok=not rolled,
                 pages_verified=False,
                 rolled_back=rolled,
                 called_network=network,
