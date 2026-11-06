@@ -1,0 +1,24 @@
+{
+  "tested_code_sha": "cfe1319e144c717463d4cebe73deb7c6b62c94ed",
+  "baseline_main": "783d57502e797a748ec5c64b757a111236d20c95",
+  "named_code_sha": "c4b48e8d07dc4fc8d2ce91929713bca67ad1e045",
+  "package": "pumeng-incremental-cfe1319e144c.tar.gz",
+  "package_sha256": "99718b05d8e2ffa78406cdebe3c2cce9f11ae07da815858bd8e355de747dcbe2",
+  "python_log_sha256": "e8730482c8375d9cc0d2784bda25a953ba72f50d892e6ff0913695f4161fa435",
+  "node_log_sha256": "751c7ad05cfe654b93ed153017d7a5ba4a8c3aa9614c389494f08921ee136b9c",
+  "python_tail": [
+    "",
+    "OK"
+  ],
+  "cases": [
+    "test_two_small_increments_use_the_operator_entry",
+    "test_stale_release_and_large_change_do_not_push",
+    "test_dirty_tree_pages_mismatch_and_rejected_push_leave_baseline",
+    "test_concurrent_data_tip_is_parent_and_foreign_tip_is_not_rewound",
+    "test_unapproved_tree_is_rejected",
+    "test_empty_bare_deletes_main_when_pages_do_not_match",
+    "test_rejected_rollback_does_not_report_push_success",
+    "test_dead_lock_is_reclaimed_and_live_lock_is_not"
+  ],
+  "inputs": "synthetic; no on-site tasks.json"
+}
