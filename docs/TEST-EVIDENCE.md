@@ -25,3 +25,7 @@ NODE_PATH=".test-tools/node_modules${NODE_PATH:+:$NODE_PATH}" node tests/browser
 被测代码是 `100451dfbffca33da2fbe989d77d66fc88661caf`。请看 `artifacts/test-python-100451dfbffc.log` 和 `artifacts/test-python-repair-final.log`。两处目录 sha256 都是 `15f0f27d4600b1519627502e3669695eab450c52265313cf6d3f79774f9b0e9b`。结尾是 `Ran 34 tests in 0.252s` 和 `OK`。本地 bare 回滚与过期锁回收这两条都在这份日志里，状态是 ok。Node、浏览器文件名同样带 `100451dfbffc` 和 `repair-final`。对照表是 `artifacts/test-run-100451d.json`。
 
 这次默认态截图 mtime 是 `2026-11-06T04:00:55Z`。`browser-check.json` 的 `fontPx` 为标题 43、区标题 27、卡标题 24、正文 20、按钮 20、指标 42、标签 16。`metricsBottom` 仍不超过 1080，`openDisclosures` 为 0。390 与 320 的截图是同一次运行写出的。后续如果只把本段说明提交进去，那个 SHA 不是被测树。
+
+## 空 main 与回滚被拒
+
+被测代码是 `b665cc4d8677235c728dd8ced390d8efa0dbaffa`。请看 `artifacts/test-python-b665cc4d8677.log` 和 `artifacts/test-python-b1-final.log`。两处目录 sha256 都是 `dc7f6ac5ec0c6521281bd46d1a504aa99eeebf0623f84078cea23220a9f54877`。结尾是 `Ran 36 tests in 0.408s` 和 `OK`。证明用例是 `test_empty_bare_deletes_main_when_pages_do_not_match` 与 `test_rejected_rollback_does_not_report_push_success`，都是 ok。已有 main 且允许强制回滚的用例 `test_file_bare_pushes_candidate_bytes_and_rolls_back_when_pages_mismatch` 仍是 ok。对照表是 `artifacts/test-run-b665cc4.json`。这次默认态截图 mtime 是 `2026-11-06T04:22:00Z`，字号仍是 43/27/24/20/20/42，`metricsBottom` 是 960.109375。写入本段的提交不是被测树。远端只用 `file://` 临时 bare，没有推 github.com 的 main。
