@@ -8,7 +8,7 @@
 
 检查新快照用 `python3 scripts/check_update.py`。默认干跑。`--publish` 在这个入口里会拒绝。`python3 scripts/check_update.py --list-paths` 列出哪些拒绝是代码门、哪些生产控制还没有配置。
 
-历史 `publish.sh` 的仓库内替换是 `scripts/replacement/publish.sh`。它不取令牌，也不推送。盒子上的旧脚本没有被这个替换改掉。说明在 `docs/REPLACEMENT.md`。
+历史 `publish.sh` 的仓库内替换是 `scripts/replacement/publish.sh`。默认干跑。`--production` 只有在外部安装配置和放行材料对上当前候选时才会调用发布器，程序不会自己写放行文件。检测用 `--detect`。说明在 `docs/REPLACEMENT.md` 和 `docs/INSTALL-CHECKLIST.md`。
 
 ```bash
 bash scripts/run_tests.sh

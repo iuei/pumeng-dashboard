@@ -118,7 +118,7 @@ PATHS = (
         "code_gate": "implemented",
         "production_control": "absent",
         "routine_text_is_gate": False,
-        "reason": "scripts/replacement/publish.sh 只走安全入口，不取 gh token、不 push、不走 Contents API。生产侧还没改到这个入口。",
+        "reason": "scripts/replacement/publish.sh 只走安全入口。旧的 --publish/--push/--contents-api 不能绕进受控发布。生产安装仍要外部放行材料，本仓库没有代写。",
     },
     {
         "id": "routine_text_freeze",

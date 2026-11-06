@@ -48,3 +48,11 @@ python3 scripts/replacement/safe_publish.py \
 ```
 
 不传 `--tasks` 时直接失败，不会去打开历史目录。
+
+## 受控生产
+
+默认仍是干跑。`--production` 只有在外部放行材料和安装配置同时对上当前候选时才会调用发布器。检测用 `--detect`，它不调用发布器。
+
+放行材料必须来自验收之后的操作者，程序没有生成它的命令。`approved_code_sha` 只覆盖被点名的那一次代码版本。git 推送成功和 Pages 字节核验成功是两个字段：`git_push_ok` 与 `pages_verified`。只有后者为真才推进 `out/state/baseline.json`。
+
+安装文件里的 `network_publisher` 默认应保持 false。设为 true 之后，发布器才会调用本机已有的 `git push <remote> HEAD:main`，再单独获取 Pages 上的 `data.json` 做 sha256 比对。程序不读取 token，remote 里若带有凭据会被拒绝。这仍然挡不住手里另有 main 凭据、不走这个入口的人。旧脚本上的 Contents API 回退在这个包里不存在。

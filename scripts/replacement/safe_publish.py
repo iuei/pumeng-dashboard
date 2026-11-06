@@ -17,8 +17,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from check_update import load_approval, parse_now  # noqa: E402
-from pumeng_update import env_requests_bypass, execute  # noqa: E402
+from pumeng_update import SnapshotLoadError, env_requests_bypass, execute, load_snapshot  # noqa: E402
 from replacement.build_snapshot import SchemaError, SensitiveMaterial, build_snapshot  # noqa: E402
+from replacement.production_adapter import (  # noqa: E402
+    load_materials,
+    run_controlled_publish,
+    select_publisher,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -33,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--push", action="store_true", help="始终拒绝")
     parser.add_argument("--contents-api", action="store_true", help="始终拒绝")
     parser.add_argument("--bypass-approval", action="store_true", help="始终拒绝")
+    parser.add_argument("--production", action="store_true", help="受控发布。需要安装配置和外部放行材料。")
+    parser.add_argument("--detect", action="store_true", help="只判断能否发布，不调用发布器。")
+    parser.add_argument("--install", default=None)
+    parser.add_argument("--release", default=None)
+    parser.add_argument("--running-sha", default=None)
     parser.add_argument("--out", default=".pumeng-update-out")
     return parser
 
@@ -62,7 +72,12 @@ def main(argv=None) -> int:
     out = Path(args.out)
     now, now_source, now_error = parse_now(args.now)
     bypass = bool(args.bypass_approval or env_requests_bypass())
-    production_request = bool(args.publish or args.push or args.contents_api)
+    legacy_force = bool(args.publish or args.push or args.contents_api)
+    if args.production and legacy_force:
+        body = _failure(out, "legacy_flag_cannot_bypass", 5, message="旧的 publish/push/contents-api 开关不能进入受控发布。")
+        print(json.dumps(body, ensure_ascii=False, indent=2, sort_keys=True))
+        return 5
+    production_request = legacy_force
     if now_error or bypass or production_request:
         result = execute(
             baseline_path=Path(args.baseline),
@@ -118,6 +133,31 @@ def main(argv=None) -> int:
     scan = built.pop("_scan")
     candidate = out / "built-candidate.json"
     _write(candidate, built)
+    if args.production or args.detect:
+        try:
+            baseline = load_snapshot(Path(args.baseline))
+        except SnapshotLoadError as exc:
+            body = _failure(out, "invalid_baseline", 3, error_type=exc.code)
+            print(json.dumps(body, ensure_ascii=False, indent=2, sort_keys=True))
+            return 3
+        install, _install_error, release, _release_error = load_materials(args.install, args.release)
+        result = run_controlled_publish(
+            baseline=baseline,
+            candidate=built,
+            trigger=args.trigger,
+            now=now,
+            install=install,
+            release=release,
+            running_sha=args.running_sha or "",
+            out_dir=out,
+            publisher=select_publisher(install),
+            detect_only=bool(args.detect),
+            candidate_bytes=candidate.read_bytes(),
+        )
+        result["historical_detectors_available"] = scan["historical_detectors_available"]
+        result["read_gh_token"] = False
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        return int(result["exit_code"])
     approval, approval_error = load_approval(args.approval)
     result = execute(
         baseline_path=Path(args.baseline),
